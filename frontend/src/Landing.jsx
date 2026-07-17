@@ -15,77 +15,77 @@ const staggerContainer = {
 
 
 // ── Palette ─────────────────────────────────────────────────────────────
-const BLUE    = "#2563eb";   // matte cobalt — main accent
+const BLUE = "#2563eb";   // matte cobalt — main accent
 const BLUE_DK = "#1d4ed8";   // hover state
 const BLUE_LT = "#eff6ff";   // bg tints
 const BLUE_BD = "#bfdbfe";   // borders
 
 const BTN = {
-  bg:    "#e8734a",  // Claude-inspired warm orange CTA
+  bg: "#e8734a",  // Claude-inspired warm orange CTA
   hover: "#d4623a",
-  glow:  "rgba(232,115,74,0.25)",
+  glow: "rgba(232,115,74,0.25)",
 };
 
 // ── Data ─────────────────────────────────────────────────────────────────
 const AGENTS = [
-  { label: "Planner",  color: BLUE,      icon: "◈", desc: "Breaks your task into an architecture plan" },
-  { label: "Coder",    color: "#f59e0b", icon: "◉", desc: "Writes every file with full context" },
-  { label: "Critic",   color: "#8b5cf6", icon: "◎", desc: "Reviews code for real bugs only" },
+  { label: "Planner", color: BLUE, icon: "◈", desc: "Breaks your task into an architecture plan" },
+  { label: "Coder", color: "#f59e0b", icon: "◉", desc: "Writes every file with full context" },
+  { label: "Critic", color: "#8b5cf6", icon: "◎", desc: "Reviews code for real bugs only" },
   { label: "Executor", color: "#06b6d4", icon: "◆", desc: "Runs code in Docker sandbox" },
   { label: "Debugger", color: "#10b981", icon: "◇", desc: "Self-heals errors automatically" },
 ];
 
 const FEATURES = [
-  { icon: "⬡", color: BLUE,      bg: BLUE_LT,  title: "Multi-Agent Orchestration",   desc: "5 specialized agents coordinated by LangGraph. Not a chatbot — a system where each agent has one job and does it well." },
-  { icon: "↺", color: "#06b6d4", bg: "#ecfeff", title: "Self-Healing Code",           desc: "When code fails the critic, ARCHON retries with exact feedback — up to 3 attempts before asking you to step in." },
-  { icon: "◈", color: "#8b5cf6", bg: "#f5f3ff", title: "Vector Memory",              desc: "Every build is stored as an embedding in Supabase. Future similar tasks reuse past solutions." },
-  { icon: "⬟", color: "#10b981", bg: "#ecfdf5", title: "Human-in-the-Loop Gate",     desc: "When AI can't solve a problem after 3 tries, it shows you the critic feedback and waits." },
-  { icon: "⬛", color: "#f59e0b", bg: "#fffbeb", title: "Real Code Execution",        desc: "Generated code runs in an isolated Docker container. Real output, real errors — not simulated." },
-  { icon: "⬢", color: "#e8734a", bg: "#fff5f0", title: "Inter-File Context",         desc: "Each file is generated knowing every already-written file. No broken imports. No mismatched IDs." },
+  { icon: "⬡", color: BLUE, bg: BLUE_LT, title: "Multi-Agent Orchestration", desc: "5 specialized agents coordinated by LangGraph. Not a chatbot — a system where each agent has one job and does it well." },
+  { icon: "↺", color: "#06b6d4", bg: "#ecfeff", title: "Self-Healing Code", desc: "When code fails the critic, ARCHON retries with exact feedback — up to 3 attempts before asking you to step in." },
+  { icon: "◈", color: "#8b5cf6", bg: "#f5f3ff", title: "Vector Memory", desc: "Every build is stored as an embedding in Supabase. Future similar tasks reuse past solutions." },
+  { icon: "⬟", color: "#10b981", bg: "#ecfdf5", title: "Human-in-the-Loop Gate", desc: "When AI can't solve a problem after 3 tries, it shows you the critic feedback and waits." },
+  { icon: "⬛", color: "#f59e0b", bg: "#fffbeb", title: "Real Code Execution", desc: "Generated code runs in an isolated Docker container. Real output, real errors — not simulated." },
+  { icon: "⬢", color: "#e8734a", bg: "#fff5f0", title: "Inter-File Context", desc: "Each file is generated knowing every already-written file. No broken imports. No mismatched IDs." },
 ];
 
 const STACK = [
-  { name: "LangGraph",     role: "Agent orchestration", color: BLUE },
-  { name: "GPT-4o",        role: "Planning + review",   color: "#8b5cf6" },
-  { name: "GPT-4o-mini",   role: "Code generation",     color: "#f59e0b" },
-  { name: "FastAPI",       role: "Backend API",         color: "#10b981" },
-  { name: "React 19",      role: "Frontend UI",         color: "#06b6d4" },
-  { name: "Supabase",      role: "Vector memory",       color: "#8b5cf6" },
-  { name: "Docker",        role: "Code sandbox",        color: "#f59e0b" },
-  { name: "pgvector",      role: "Embedding search",    color: BLUE },
-  { name: "Framer Motion", role: "Animations",          color: "#e8734a" },
+  { name: "LangGraph", role: "Agent orchestration", color: BLUE },
+  { name: "GPT-4o", role: "Planning + review", color: "#8b5cf6" },
+  { name: "GPT-4o-mini", role: "Code generation", color: "#f59e0b" },
+  { name: "FastAPI", role: "Backend API", color: "#10b981" },
+  { name: "React 19", role: "Frontend UI", color: "#06b6d4" },
+  { name: "Supabase", role: "Vector memory", color: "#8b5cf6" },
+  { name: "Docker", role: "Code sandbox", color: "#f59e0b" },
+  { name: "pgvector", role: "Embedding search", color: BLUE },
+  { name: "Framer Motion", role: "Animations", color: "#e8734a" },
 ];
 
 // Hero terminal — shows the full pipeline as agent log entries
 const HERO_LINES = [
-  { text: "$ archon build \"portfolio website\"",  color: "#ededf0",  tag: null },
-  { text: "",                                       color: "",         tag: null },
-  { text: "Analyzing task...",                      color: "#8a8a9a",  tag: { label: "PLANNER",  color: "#60a5fa" } },
-  { text: "Plan ready — 3 files to generate",      color: "#8a8a9a",  tag: { label: "PLANNER",  color: "#60a5fa" } },
-  { text: "Generating index.html...",               color: "#8a8a9a",  tag: { label: "CODER",    color: "#fbbf24" } },
-  { text: "<!DOCTYPE html>",                         color: "#34d399",  tag: null, indent: 2 },
-  { text: "<html lang=\"en\">",                      color: "#60a5fa",  tag: null, indent: 2 },
-  { text: "  <title>Portfolio</title>",              color: "#f0f0f0",  tag: null, indent: 2 },
-  { text: "index.html ready",                       color: "#8a8a9a",  tag: { label: "CODER",    color: "#fbbf24" } },
-  { text: "Reviewing index.html...",                color: "#8a8a9a",  tag: { label: "CRITIC",   color: "#a78bfa" } },
-  { text: "✅ PASS — no issues found",              color: "#34d399",  tag: { label: "CRITIC",   color: "#34d399" } },
-  { text: "Running in Docker sandbox...",           color: "#8a8a9a",  tag: { label: "EXECUTOR", color: "#22d3ee" } },
-  { text: "Output: Portfolio served on :3000 ✓",    color: "#34d399",  tag: { label: "EXECUTOR", color: "#22d3ee" } },
+  { text: "$ archon build \"portfolio website\"", color: "#ededf0", tag: null },
+  { text: "", color: "", tag: null },
+  { text: "Analyzing task...", color: "#8a8a9a", tag: { label: "PLANNER", color: "#60a5fa" } },
+  { text: "Plan ready — 3 files to generate", color: "#8a8a9a", tag: { label: "PLANNER", color: "#60a5fa" } },
+  { text: "Generating index.html...", color: "#8a8a9a", tag: { label: "CODER", color: "#fbbf24" } },
+  { text: "<!DOCTYPE html>", color: "#34d399", tag: null, indent: 2 },
+  { text: "<html lang=\"en\">", color: "#60a5fa", tag: null, indent: 2 },
+  { text: "  <title>Portfolio</title>", color: "#f0f0f0", tag: null, indent: 2 },
+  { text: "index.html ready", color: "#8a8a9a", tag: { label: "CODER", color: "#fbbf24" } },
+  { text: "Reviewing index.html...", color: "#8a8a9a", tag: { label: "CRITIC", color: "#a78bfa" } },
+  { text: "✅ PASS — no issues found", color: "#34d399", tag: { label: "CRITIC", color: "#34d399" } },
+  { text: "Running in Docker sandbox...", color: "#8a8a9a", tag: { label: "EXECUTOR", color: "#22d3ee" } },
+  { text: "Output: Portfolio served on :3000 ✓", color: "#34d399", tag: { label: "EXECUTOR", color: "#22d3ee" } },
 ];
 
 // Coder terminal — shows code being written file by file
 const CODE_LINES = [
   { text: "# Task: Build a terminal portfolio", color: "#52526a", indent: 0 },
-  { text: "def generate_portfolio():",           color: "#60a5fa", indent: 0 },
-  { text: "    title = 'Mayank Chaudhary'",      color: "#34d399", indent: 1 },
-  { text: "    skills = ['Python', 'React',",     color: "#fbbf24", indent: 1 },
-  { text: "              'LangGraph', 'RAG']",    color: "#fbbf24", indent: 1 },
-  { text: "    projects = load_from_db()",        color: "#f0f0f0", indent: 1 },
-  { text: "    return render_html(title,",        color: "#f0f0f0", indent: 1 },
-  { text: "                       skills,",       color: "#f0f0f0", indent: 1 },
-  { text: "                       projects)",     color: "#f0f0f0", indent: 1 },
-  { text: "",                                    color: "#f0f0f0", indent: 0 },
-  { text: "# ✅  CRITIC: PASS — file complete",  color: "#34d399", indent: 0 },
+  { text: "def generate_portfolio():", color: "#60a5fa", indent: 0 },
+  { text: "    title = 'Mayank Chaudhary'", color: "#34d399", indent: 1 },
+  { text: "    skills = ['Python', 'React',", color: "#fbbf24", indent: 1 },
+  { text: "              'LangGraph', 'RAG']", color: "#fbbf24", indent: 1 },
+  { text: "    projects = load_from_db()", color: "#f0f0f0", indent: 1 },
+  { text: "    return render_html(title,", color: "#f0f0f0", indent: 1 },
+  { text: "                       skills,", color: "#f0f0f0", indent: 1 },
+  { text: "                       projects)", color: "#f0f0f0", indent: 1 },
+  { text: "", color: "#f0f0f0", indent: 0 },
+  { text: "# ✅  CRITIC: PASS — file complete", color: "#34d399", indent: 0 },
 ];
 
 export default function Landing() {
@@ -93,12 +93,12 @@ export default function Landing() {
 
   useEffect(() => {
     document.body.style.background = "#fafbff";
-    document.body.style.overflow   = "auto";
-    document.body.style.height     = "auto";
+    document.body.style.overflow = "auto";
+    document.body.style.height = "auto";
     return () => {
       document.body.style.background = "";
-      document.body.style.overflow   = "";
-      document.body.style.height     = "";
+      document.body.style.overflow = "";
+      document.body.style.height = "";
     };
   }, []);
 
@@ -140,14 +140,14 @@ export default function Landing() {
             >{l}</a>
           ))}
           <button
-            onClick={() => navigate("/app")}
+            onClick={() => navigate("https://github.com/Mayank-Chaudhary-011/ARCHON.git")}
             style={{
               padding: "9px 22px", borderRadius: "9px", border: "none", cursor: "pointer",
               background: BTN.bg, color: "#fff", fontSize: "14px", fontWeight: 600,
               fontFamily: "'Inter', sans-serif", boxShadow: `0 2px 12px ${BTN.glow}`, transition: "all 0.2s",
             }}
             onMouseEnter={e => { e.target.style.background = BTN.hover; e.target.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={e => { e.target.style.background = BTN.bg;    e.target.style.transform = "translateY(0)"; }}
+            onMouseLeave={e => { e.target.style.background = BTN.bg; e.target.style.transform = "translateY(0)"; }}
           >Codebase →</button>
         </div>
       </nav>
@@ -193,7 +193,7 @@ export default function Landing() {
                 fontFamily: "'Inter', sans-serif", boxShadow: `0 4px 20px ${BTN.glow}`, transition: "all 0.2s",
               }}
               onMouseEnter={e => { e.target.style.background = BTN.hover; e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = `0 8px 28px ${BTN.glow}`; }}
-              onMouseLeave={e => { e.target.style.background = BTN.bg;    e.target.style.transform = "translateY(0)";  e.target.style.boxShadow = `0 4px 20px ${BTN.glow}`; }}
+              onMouseLeave={e => { e.target.style.background = BTN.bg; e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = `0 4px 20px ${BTN.glow}`; }}
             >Start Building Free →</button>
           </div>
 
@@ -306,12 +306,12 @@ export default function Landing() {
                 <div style={{ padding: "12px 14px", flex: 1, overflow: "hidden" }}>
                   <div style={{ fontSize: "9px", color: "#52526a", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Agent Log</div>
                   {[
-                    { tag: "PLANNER",  color: "#60a5fa", msg: "Plan ready — 3 files",     delay: 0.5 },
-                    { tag: "CODER",    color: "#fbbf24", msg: "index.html...",             delay: 1.2 },
-                    { tag: "CRITIC",   color: "#34d399", msg: "✓ PASS",                   delay: 2.0 },
-                    { tag: "CODER",    color: "#fbbf24", msg: "style.css...",              delay: 2.6 },
-                    { tag: "CRITIC",   color: "#34d399", msg: "✓ PASS",                   delay: 3.2 },
-                    { tag: "EXECUTOR", color: "#22d3ee", msg: "Done. Output: ✓",          delay: 3.8 },
+                    { tag: "PLANNER", color: "#60a5fa", msg: "Plan ready — 3 files", delay: 0.5 },
+                    { tag: "CODER", color: "#fbbf24", msg: "index.html...", delay: 1.2 },
+                    { tag: "CRITIC", color: "#34d399", msg: "✓ PASS", delay: 2.0 },
+                    { tag: "CODER", color: "#fbbf24", msg: "style.css...", delay: 2.6 },
+                    { tag: "CRITIC", color: "#34d399", msg: "✓ PASS", delay: 3.2 },
+                    { tag: "EXECUTOR", color: "#22d3ee", msg: "Done. Output: ✓", delay: 3.8 },
                   ].map((l, i) => (
                     <div key={i} style={{ display: "flex", gap: "5px", alignItems: "flex-start", marginBottom: "4px", opacity: 0, animation: `fadeSlide 0.3s ${l.delay}s forwards` }}>
                       <span style={{ fontSize: "8px", fontWeight: 700, padding: "1px 4px", borderRadius: "3px", color: l.color, border: `1px solid ${l.color}`, backgroundColor: `color-mix(in srgb, ${l.color} 10%, transparent)`, flexShrink: 0, fontFamily: "JetBrains Mono, monospace" }}>{l.tag}</span>
@@ -340,15 +340,15 @@ export default function Landing() {
                 {/* Code */}
                 <div style={{ padding: "16px 20px", fontFamily: "JetBrains Mono, monospace", fontSize: "12px", lineHeight: 1.85, flex: 1 }}>
                   {[
-                    { n: 1,  color: "#52526a", text: "<!DOCTYPE html>" },
-                    { n: 2,  color: "#60a5fa", text: "<html lang=\"en\">" },
-                    { n: 3,  color: "#60a5fa", text: "  <head>" },
-                    { n: 4,  color: "#f0f0f0", text: "    <meta charset=\"UTF-8\">" },
-                    { n: 5,  color: "#34d399", text: "    <title>Mayank · Portfolio</title>" },
-                    { n: 6,  color: "#f0f0f0", text: "    <link rel=\"stylesheet\" href=\"style.css\">" },
-                    { n: 7,  color: "#60a5fa", text: "  </head>" },
-                    { n: 8,  color: "#60a5fa", text: "  <body>" },
-                    { n: 9,  color: "#a78bfa", text: "    <header class=\"hero\">" },
+                    { n: 1, color: "#52526a", text: "<!DOCTYPE html>" },
+                    { n: 2, color: "#60a5fa", text: "<html lang=\"en\">" },
+                    { n: 3, color: "#60a5fa", text: "  <head>" },
+                    { n: 4, color: "#f0f0f0", text: "    <meta charset=\"UTF-8\">" },
+                    { n: 5, color: "#34d399", text: "    <title>Mayank · Portfolio</title>" },
+                    { n: 6, color: "#f0f0f0", text: "    <link rel=\"stylesheet\" href=\"style.css\">" },
+                    { n: 7, color: "#60a5fa", text: "  </head>" },
+                    { n: 8, color: "#60a5fa", text: "  <body>" },
+                    { n: 9, color: "#a78bfa", text: "    <header class=\"hero\">" },
                     { n: 10, color: "#fbbf24", text: "      <h1>Mayank Chaudhary</h1>" },
                     { n: 11, color: "#f0f0f0", text: "      <p>AI · Full Stack · LangGraph</p>" },
                     { n: 12, color: "#a78bfa", text: "    </header>" },
@@ -370,7 +370,7 @@ export default function Landing() {
       {/* ── How It Works ──────────────────────────────────── */}
       <section id="how-it-works" style={{ padding: "100px 24px" }}>
         <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -381,7 +381,7 @@ export default function Landing() {
             <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(24px, 3.5vw, 40px)", fontWeight: 800, letterSpacing: "-0.02em" }}>Five agents. One goal.</h2>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -408,7 +408,7 @@ export default function Landing() {
             ))}
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
@@ -427,7 +427,7 @@ export default function Landing() {
       {/* ── Animated Code Generation Section (replaces editor image) ── */}
       <section style={{ padding: "100px 24px", background: "#fff" }}>
         <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -439,7 +439,7 @@ export default function Landing() {
           </motion.div>
 
           {/* Animated terminal card */}
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -472,9 +472,9 @@ export default function Landing() {
               {/* Agent status row */}
               <div style={{ display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap" }}>
                 {[
-                  { name: "PLANNER",  color: "#60a5fa", done: true },
-                  { name: "CODER",    color: "#fbbf24", done: false, active: true },
-                  { name: "CRITIC",   color: "#f87171", done: false },
+                  { name: "PLANNER", color: "#60a5fa", done: true },
+                  { name: "CODER", color: "#fbbf24", done: false, active: true },
+                  { name: "CRITIC", color: "#f87171", done: false },
                   { name: "EXECUTOR", color: "#22d3ee", done: false },
                 ].map(a => (
                   <span key={a.name} style={{
@@ -512,7 +512,7 @@ export default function Landing() {
       {/* ── Features ─────────────────────────────────────── */}
       <section id="features" style={{ padding: "100px 24px", background: "#f8f8fc" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -523,7 +523,7 @@ export default function Landing() {
             <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(24px, 3.5vw, 40px)", fontWeight: 800, letterSpacing: "-0.02em" }}>Not a wrapper. A system.</h2>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -531,7 +531,7 @@ export default function Landing() {
             style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "16px" }}
           >
             {FEATURES.map(f => (
-              <motion.div 
+              <motion.div
                 key={f.title}
                 variants={fadeInUp}
                 style={{ padding: "28px", borderRadius: "14px", background: "#fff", border: "1px solid #e8eaf6", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", transition: "box-shadow 0.25s, transform 0.25s", cursor: "default" }}
@@ -550,7 +550,7 @@ export default function Landing() {
       {/* ── Stack ─────────────────────────────────────────── */}
       <section id="stack" style={{ padding: "100px 24px", background: "#f8f8fc" }}>
         <div style={{ maxWidth: "900px", margin: "0 auto", textAlign: "center" }}>
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -560,7 +560,7 @@ export default function Landing() {
             <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(24px, 3.5vw, 40px)", fontWeight: 800, letterSpacing: "-0.02em", marginBottom: "48px" }}>Production-grade infrastructure.</h2>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -568,7 +568,7 @@ export default function Landing() {
             style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}
           >
             {STACK.map(s => (
-              <motion.div 
+              <motion.div
                 key={s.name}
                 variants={fadeInUp}
                 style={{ padding: "20px 18px", borderRadius: "12px", background: "#fff", border: "1px solid #e8eaf6", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", textAlign: "left", transition: "transform 0.2s, box-shadow 0.2s" }}
@@ -585,7 +585,7 @@ export default function Landing() {
 
       {/* ── Final CTA ─────────────────────────────────────── */}
       <section style={{ padding: "120px 24px 140px", textAlign: "center", background: "#fff" }}>
-        <motion.div 
+        <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
@@ -604,7 +604,7 @@ export default function Landing() {
               fontFamily: "'Inter', sans-serif", boxShadow: `0 6px 24px ${BTN.glow}`, transition: "all 0.2s",
             }}
             onMouseEnter={e => { e.target.style.background = BTN.hover; e.target.style.transform = "translateY(-3px)"; e.target.style.boxShadow = `0 12px 32px ${BTN.glow}`; }}
-            onMouseLeave={e => { e.target.style.background = BTN.bg;    e.target.style.transform = "translateY(0)";  e.target.style.boxShadow = `0 6px 24px ${BTN.glow}`; }}
+            onMouseLeave={e => { e.target.style.background = BTN.bg; e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = `0 6px 24px ${BTN.glow}`; }}
           >Launch ARCHON →</button>
         </motion.div>
       </section>

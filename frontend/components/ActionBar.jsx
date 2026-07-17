@@ -56,6 +56,8 @@ export default function ActionBar({
                 value={task}
                 onChange={(e) => setTask(e.target.value)}
                 onKeyDown={handleKey}
+                onFocus={() => window.dispatchEvent(new CustomEvent("archon-input-focus", { detail: { focused: true } }))}
+                onBlur={() => window.dispatchEvent(new CustomEvent("archon-input-focus", { detail: { focused: false } }))}
                 placeholder="Describe what to build... (Ctrl+Enter)"
                 rows={4}
                 style={{
@@ -75,6 +77,8 @@ export default function ActionBar({
                 <textarea
                   value={broken}
                   onChange={(e) => setBroken(e.target.value)}
+                  onFocus={() => window.dispatchEvent(new CustomEvent("archon-input-focus", { detail: { focused: true } }))}
+                  onBlur={() => window.dispatchEvent(new CustomEvent("archon-input-focus", { detail: { focused: false } }))}
                   placeholder="Paste your file here (optional)..."
                   rows={4}
                   style={{
@@ -92,6 +96,8 @@ export default function ActionBar({
                   value={error}
                   onChange={(e) => setError(e.target.value)}
                   onKeyDown={handleKey}
+                  onFocus={() => window.dispatchEvent(new CustomEvent("archon-input-focus", { detail: { focused: true } }))}
+                  onBlur={() => window.dispatchEvent(new CustomEvent("archon-input-focus", { detail: { focused: false } }))}
                   placeholder="Paste error message here (required)..."
                   rows={4}
                   style={{

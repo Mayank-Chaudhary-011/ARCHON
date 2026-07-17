@@ -59,17 +59,27 @@ const Icons = {
 export default function VisualGraph({ appState, agentLog = [] }) {
   const [activeNode, setActiveNode] = useState(null);
   const [pathState, setPathState] = useState("idle");
+  const [isInputFocused, setIsInputFocused] = useState(false);
+
+  // Track bottom input focus state via custom events
+  useEffect(() => {
+    const handleFocus = (e) => {
+      setIsInputFocused(e.detail.focused);
+    };
+    window.addEventListener("archon-input-focus", handleFocus);
+    return () => window.removeEventListener("archon-input-focus", handleFocus);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       if (appState === "idle") {
-        setActiveNode(null);
+        setActiveNode(isInputFocused ? "trigger" : null);
         setPathState("idle");
         return;
       }
 
       if (appState === "planning") {
-        setActiveNode("trigger");
+        setActiveNode("orchestrator");
         setPathState("planning");
         return;
       }
@@ -116,21 +126,21 @@ export default function VisualGraph({ appState, agentLog = [] }) {
     }, 0);
 
     return () => clearTimeout(timer);
-  }, [appState, agentLog]);
+  }, [appState, agentLog, isInputFocused]);
 
   const isNodeActive = (id) => activeNode === id;
   const isNodeDone = (id) => {
     if (appState === "complete") return true;
-    if (id === "trigger" && ["building", "complete", "human_review"].includes(appState)) return true;
+    if (id === "trigger" && ["planning", "building", "complete", "human_review"].includes(appState)) return true;
     return false;
   };
 
-  // Coordinates matching the workflow structure
-  const triggerNode = { x: 30, y: 110, w: 100, h: 70, label: "On Request", desc: "Trigger Input", color: "#60a5fa", key: "trigger" };
-  const orchestratorNode = { x: 210, y: 100, w: 150, h: 90, label: "ARCHON Agent", desc: "Orchestration Engine", color: "#fbbf24", key: "orchestrator" };
-  const criticNode = { x: 440, y: 110, w: 110, h: 70, label: "Is Code Valid?", desc: "Self-Heal Router", color: "#a78bfa", key: "critic" };
-  const executorNode = { x: 620, y: 50, w: 120, h: 70, label: "Sandbox Run", desc: "Execute Tests", color: "#34d399", key: "executor" };
-  const debuggerNode = { x: 620, y: 170, w: 120, h: 70, label: "Auto Debugger", desc: "Code Correction", color: "#f87171", key: "debugger" };
+  // Node coordinates and dimension configs (Scaled up by 15-20% for visibility)
+  const triggerNode = { x: 20, y: 120, w: 125, h: 80, label: "On Request", desc: "Trigger Input", color: "#60a5fa", key: "trigger" };
+  const orchestratorNode = { x: 225, y: 105, w: 185, h: 110, label: "ARCHON Agent", desc: "Orchestration Engine", color: "#fbbf24", key: "orchestrator" };
+  const criticNode = { x: 485, y: 120, w: 145, h: 80, label: "Is Code Valid?", desc: "Self-Heal Router", color: "#a78bfa", key: "critic" };
+  const executorNode = { x: 700, y: 50, w: 155, h: 80, label: "Sandbox Run", desc: "Execute Tests", color: "#34d399", key: "executor" };
+  const debuggerNode = { x: 700, y: 190, w: 155, h: 80, label: "Auto Debugger", desc: "Code Correction", color: "#f87171", key: "debugger" };
 
   return (
     <div style={{
@@ -165,7 +175,7 @@ export default function VisualGraph({ appState, agentLog = [] }) {
           borderRadius: "100px",
           letterSpacing: "0.05em"
         }}>
-          {appState === "idle" && "🔴 IDLE — AWAITING TRIGGER"}
+          {appState === "idle" && "🟢 IDLE — AWAITING TRIGGER"}
           {appState === "planning" && "⚡ TRIGGER ACTIVATED — PLANNING"}
           {appState === "building" && "🔄 AGENT LOOP RUNNING"}
           {appState === "human_review" && "⚠️ ESCALATION WAITING FOR REVIEW"}
@@ -173,7 +183,7 @@ export default function VisualGraph({ appState, agentLog = [] }) {
         </span>
       </div>
 
-      <svg width="780" height="360" style={{ overflow: "visible" }}>
+      <svg width="880" height="360" style={{ overflow: "visible" }}>
         <defs>
           {/* Glowing Filters */}
           <filter id="glow-active" x="-20%" y="-20%" width="140%" height="140%">
@@ -185,79 +195,83 @@ export default function VisualGraph({ appState, agentLog = [] }) {
         {/* ── CONNECTION LINES (CURVED BEZIER BEHIND) ── */}
 
         {/* Path 1: Trigger -> Orchestrator */}
-        <path 
+        <path
           d={`M ${triggerNode.x + triggerNode.w} ${triggerNode.y + triggerNode.h / 2} C ${triggerNode.x + triggerNode.w + 40} ${triggerNode.y + triggerNode.h / 2}, ${orchestratorNode.x - 40} ${orchestratorNode.y + orchestratorNode.h / 2}, ${orchestratorNode.x} ${orchestratorNode.y + orchestratorNode.h / 2}`}
           stroke={["planning", "coding", "reviewing", "healing", "complete"].includes(pathState) ? "#2563eb" : "#1e1e2e"}
           strokeWidth="2.5"
           fill="none"
         />
         {pathState === "planning" && (
-          <path 
+          <path
             d={`M ${triggerNode.x + triggerNode.w} ${triggerNode.y + triggerNode.h / 2} C ${triggerNode.x + triggerNode.w + 40} ${triggerNode.y + triggerNode.h / 2}, ${orchestratorNode.x - 40} ${orchestratorNode.y + orchestratorNode.h / 2}, ${orchestratorNode.x} ${orchestratorNode.y + orchestratorNode.h / 2}`}
             stroke="#60a5fa"
             strokeWidth="2.5"
             strokeDasharray="6, 6"
             className="pulse-flow"
+            filter="url(#glow-active)"
             fill="none"
           />
         )}
 
         {/* Path 2: Orchestrator -> Router */}
-        <path 
+        <path
           d={`M ${orchestratorNode.x + orchestratorNode.w} ${orchestratorNode.y + orchestratorNode.h / 2} C ${orchestratorNode.x + orchestratorNode.w + 40} ${orchestratorNode.y + orchestratorNode.h / 2}, ${criticNode.x - 40} ${criticNode.y + criticNode.h / 2}, ${criticNode.x} ${criticNode.y + criticNode.h / 2}`}
           stroke={["coding", "reviewing", "healing", "complete"].includes(pathState) ? "#fbbf24" : "#1e1e2e"}
           strokeWidth="2.5"
           fill="none"
         />
         {pathState === "coding" && (
-          <path 
+          <path
             d={`M ${orchestratorNode.x + orchestratorNode.w} ${orchestratorNode.y + orchestratorNode.h / 2} C ${orchestratorNode.x + orchestratorNode.w + 40} ${orchestratorNode.y + orchestratorNode.h / 2}, ${criticNode.x - 40} ${criticNode.y + criticNode.h / 2}, ${criticNode.x} ${criticNode.y + criticNode.h / 2}`}
             stroke="#fbbf24"
             strokeWidth="2.5"
             strokeDasharray="6, 6"
             className="pulse-flow"
+            filter="url(#glow-active)"
             fill="none"
           />
         )}
 
         {/* Path 3: Router -> Executor (True Branch) */}
-        <path 
+        <path
           d={`M ${criticNode.x + criticNode.w} ${criticNode.y + 20} C ${criticNode.x + criticNode.w + 40} ${criticNode.y + 20}, ${executorNode.x - 40} ${executorNode.y + executorNode.h / 2}, ${executorNode.x} ${executorNode.y + executorNode.h / 2}`}
           stroke={pathState === "complete" ? "#34d399" : "#1e1e2e"}
           strokeWidth="2.5"
           fill="none"
         />
         {pathState === "complete" && (
-          <path 
+          <path
             d={`M ${criticNode.x + criticNode.w} ${criticNode.y + 20} C ${criticNode.x + criticNode.w + 40} ${criticNode.y + 20}, ${executorNode.x - 40} ${executorNode.y + executorNode.h / 2}, ${executorNode.x} ${executorNode.y + executorNode.h / 2}`}
             stroke="#34d399"
             strokeWidth="2.5"
             strokeDasharray="6, 6"
             className="pulse-flow"
+            filter="url(#glow-active)"
             fill="none"
           />
         )}
 
         {/* Path 4: Router -> Debugger (False Branch) */}
-        <path 
-          d={`M ${criticNode.x + criticNode.w} ${criticNode.y + 50} C ${criticNode.x + criticNode.w + 40} ${criticNode.y + 50}, ${debuggerNode.x - 40} ${debuggerNode.y + debuggerNode.h / 2}, ${debuggerNode.x} ${debuggerNode.y + debuggerNode.h / 2}`}
+        <path
+          d={`M ${criticNode.x + criticNode.w} ${criticNode.y + 60} C ${criticNode.x + criticNode.w + 40} ${criticNode.y + 60}, ${debuggerNode.x - 40} ${debuggerNode.y + debuggerNode.h / 2}, ${debuggerNode.x} ${debuggerNode.y + debuggerNode.h / 2}`}
           stroke={pathState === "healing" ? "#f87171" : "#1e1e2e"}
           strokeWidth="2.5"
           fill="none"
         />
         {pathState === "healing" && activeNode === "debugger" && (
-          <path 
-            d={`M ${criticNode.x + criticNode.w} ${criticNode.y + 50} C ${criticNode.x + criticNode.w + 40} ${criticNode.y + 50}, ${debuggerNode.x - 40} ${debuggerNode.y + debuggerNode.h / 2}, ${debuggerNode.x} ${debuggerNode.y + debuggerNode.h / 2}`}
+          <path
+            d={`M ${criticNode.x + criticNode.w} ${criticNode.y + 60} C ${criticNode.x + criticNode.w + 40} ${criticNode.y + 60}, ${debuggerNode.x - 40} ${debuggerNode.y + debuggerNode.h / 2}, ${debuggerNode.x} ${debuggerNode.y + debuggerNode.h / 2}`}
             stroke="#f87171"
             strokeWidth="2.5"
             strokeDasharray="6, 6"
             className="pulse-flow"
+            filter="url(#glow-active)"
             fill="none"
           />
         )}
 
         {/* Path 5: Debugger -> Orchestrator (Feedback loop back) */}
-        <path 
+        <path
           d={`M ${debuggerNode.x + debuggerNode.w / 2} ${debuggerNode.y + debuggerNode.h} C ${debuggerNode.x + debuggerNode.w / 2} ${debuggerNode.y + debuggerNode.h + 50}, ${orchestratorNode.x + orchestratorNode.w / 2} ${orchestratorNode.y + orchestratorNode.h + 100}, ${orchestratorNode.x + orchestratorNode.w / 2} ${orchestratorNode.y + orchestratorNode.h}`}
           stroke={pathState === "healing" ? "#f87171" : "#1e1e2e"}
           strokeWidth="2"
@@ -266,33 +280,33 @@ export default function VisualGraph({ appState, agentLog = [] }) {
         />
 
         {/* ── DASHED PORTS UNDER THE AGENT (Dangling Model/Memory Configs) ── */}
-        
+
         {/* Connection to OpenAI */}
-        <path d="M 240 190 Q 240 230 220 250" stroke="#2a2a3a" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
+        <path d={`M ${orchestratorNode.x + 40} ${orchestratorNode.y + orchestratorNode.h} Q ${orchestratorNode.x + 40} ${orchestratorNode.y + orchestratorNode.h + 40} ${orchestratorNode.x + 20} ${orchestratorNode.y + orchestratorNode.h + 60}`} stroke="#2a2a3a" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
         {/* Connection to Supabase */}
-        <path d="M 285 190 Q 285 230 285 250" stroke="#2a2a3a" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
+        <path d={`M ${orchestratorNode.x + 90} ${orchestratorNode.y + orchestratorNode.h} Q ${orchestratorNode.x + 90} ${orchestratorNode.y + orchestratorNode.h + 40} ${orchestratorNode.x + 90} ${orchestratorNode.y + orchestratorNode.h + 60}`} stroke="#2a2a3a" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
         {/* Connection to Docker Sandbox */}
-        <path d="M 330 190 Q 330 230 350 250" stroke="#2a2a3a" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
+        <path d={`M ${orchestratorNode.x + 140} ${orchestratorNode.y + orchestratorNode.h} Q ${orchestratorNode.x + 140} ${orchestratorNode.y + orchestratorNode.h + 40} ${orchestratorNode.x + 160} ${orchestratorNode.y + orchestratorNode.h + 60}`} stroke="#2a2a3a" strokeWidth="1.5" strokeDasharray="3,3" fill="none" />
 
         {/* Model Icon Node */}
-        <circle cx="220" cy="250" r="18" fill="#161622" stroke="#2a2a3a" strokeWidth="1.5" />
-        <g transform="translate(212, 242)" style={{ color: "#8a8a9a" }}>{Icons.gpt()}</g>
-        <text x="220" y="282" textAnchor="middle" fontSize="8" fill="#52526a" fontWeight="bold">GPT-4o</text>
+        <circle cx={orchestratorNode.x + 20} cy={orchestratorNode.y + orchestratorNode.h + 75} r="18" fill="#161622" stroke="#2a2a3a" strokeWidth="1.5" />
+        <g transform={`translate(${orchestratorNode.x + 12}, ${orchestratorNode.y + orchestratorNode.h + 67})`} style={{ color: "#8a8a9a" }}>{Icons.gpt()}</g>
+        <text x={orchestratorNode.x + 20} y={orchestratorNode.y + orchestratorNode.h + 107} textAnchor="middle" fontSize="10" fill="#52526a" fontWeight="bold">GPT-4o</text>
 
         {/* Memory Icon Node */}
-        <circle cx="285" cy="250" r="18" fill="#161622" stroke="#2a2a3a" strokeWidth="1.5" />
-        <g transform="translate(277, 242)" style={{ color: "#8a8a9a" }}>{Icons.supabase()}</g>
-        <text x="285" y="282" textAnchor="middle" fontSize="8" fill="#52526a" fontWeight="bold">Supabase</text>
+        <circle cx={orchestratorNode.x + 90} cy={orchestratorNode.y + orchestratorNode.h + 75} r="18" fill="#161622" stroke="#2a2a3a" strokeWidth="1.5" />
+        <g transform={`translate(${orchestratorNode.x + 82}, ${orchestratorNode.y + orchestratorNode.h + 67})`} style={{ color: "#8a8a9a" }}>{Icons.supabase()}</g>
+        <text x={orchestratorNode.x + 90} y={orchestratorNode.y + orchestratorNode.h + 107} textAnchor="middle" fontSize="10" fill="#52526a" fontWeight="bold">Supabase</text>
 
         {/* Sandbox Icon Node */}
-        <circle cx="350" cy="250" r="18" fill="#161622" stroke="#2a2a3a" strokeWidth="1.5" />
-        <g transform="translate(342, 242)" style={{ color: "#8a8a9a" }}>{Icons.docker()}</g>
-        <text x="350" y="282" textAnchor="middle" fontSize="8" fill="#52526a" fontWeight="bold">Docker</text>
+        <circle cx={orchestratorNode.x + 160} cy={orchestratorNode.y + orchestratorNode.h + 75} r="18" fill="#161622" stroke="#2a2a3a" strokeWidth="1.5" />
+        <g transform={`translate(${orchestratorNode.x + 152}, ${orchestratorNode.y + orchestratorNode.h + 67})`} style={{ color: "#8a8a9a" }}>{Icons.docker()}</g>
+        <text x={orchestratorNode.x + 160} y={orchestratorNode.y + orchestratorNode.h + 107} textAnchor="middle" fontSize="10" fill="#52526a" fontWeight="bold">Docker</text>
 
 
         {/* ── 1. TRIGGER NODE (D-Arch Shape) ── */}
         <foreignObject x={triggerNode.x} y={triggerNode.y} width={triggerNode.w} height={triggerNode.h}>
-          <div 
+          <div
             style={{
               width: `${triggerNode.w - 4}px`,
               height: `${triggerNode.h - 4}px`,
@@ -305,15 +319,16 @@ export default function VisualGraph({ appState, agentLog = [] }) {
               justifyContent: "center",
               gap: "8px",
               boxShadow: isNodeActive("trigger") ? "0 0 10px rgba(37,99,235,0.25)" : "none",
-              color: isNodeActive("trigger") || isNodeDone("trigger") ? "#2563eb" : "#8a8a9a"
+              color: isNodeActive("trigger") || isNodeDone("trigger") ? "#2563eb" : "#8a8a9a",
+              animation: (appState === "idle" && isInputFocused) ? "triggerShake 1.5s ease infinite" : "none"
             }}
           >
             <div style={{ display: "flex", flexShrink: 0 }}>
               {Icons.trigger()}
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <span style={{ fontSize: "9px", fontWeight: 700, fontFamily: "Outfit, sans-serif", color: "#fff" }}>TRIGGER</span>
-              <span style={{ fontSize: "7px", color: "#52526a", marginTop: "1px" }}>On Request</span>
+              <span style={{ fontSize: "12px", fontWeight: 700, fontFamily: "Outfit, sans-serif", color: "#fff" }}>TRIGGER</span>
+              <span style={{ fontSize: "9px", color: "#52526a", marginTop: "1px" }}>On Request</span>
             </div>
           </div>
         </foreignObject>
@@ -321,14 +336,14 @@ export default function VisualGraph({ appState, agentLog = [] }) {
 
         {/* ── 2. ORCHESTRATOR NODE ── */}
         <foreignObject x={orchestratorNode.x} y={orchestratorNode.y} width={orchestratorNode.w} height={orchestratorNode.h}>
-          <div 
+          <div
             style={{
               width: `${orchestratorNode.w - 4}px`,
               height: `${orchestratorNode.h - 4}px`,
               background: "#161622",
               border: `2px solid ${isNodeActive("orchestrator") ? "#fbbf24" : isNodeDone("orchestrator") ? "#34d399" : "#2a2a3a"}`,
               borderRadius: "10px",
-              padding: "10px",
+              padding: "12px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
@@ -340,12 +355,12 @@ export default function VisualGraph({ appState, agentLog = [] }) {
                 {Icons.orchestrator()}
               </div>
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <span style={{ fontSize: "10px", fontWeight: 800, color: "#fff", fontFamily: "Outfit, sans-serif" }}>ARCHON Agent</span>
-                <span style={{ fontSize: "7px", color: "#52526a" }}>Coder Node</span>
+                <span style={{ fontSize: "13px", fontWeight: 800, color: "#fff", fontFamily: "Outfit, sans-serif" }}>ARCHON Agent</span>
+                <span style={{ fontSize: "9px", color: "#52526a" }}>Coder Node</span>
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "4px", fontSize: "7px", color: "#8a8a9a" }}>
+            <div style={{ display: "flex", gap: "4px", fontSize: "9px", color: "#8a8a9a" }}>
               <span style={{ background: "#2a2a3a", padding: "1px 4px", borderRadius: "2px" }}>Chat Model</span>
               <span style={{ background: "#2a2a3a", padding: "1px 4px", borderRadius: "2px" }}>Memory</span>
               <span style={{ background: "#2a2a3a", padding: "1px 4px", borderRadius: "2px" }}>Sandbox</span>
@@ -357,14 +372,14 @@ export default function VisualGraph({ appState, agentLog = [] }) {
 
         {/* ── 3. ROUTER NODE ── */}
         <foreignObject x={criticNode.x} y={criticNode.y} width={criticNode.w} height={criticNode.h}>
-          <div 
+          <div
             style={{
               width: `${criticNode.w - 4}px`,
               height: `${criticNode.h - 4}px`,
               background: "#161622",
               border: `2px solid ${isNodeActive("critic") ? "#a78bfa" : "#2a2a3a"}`,
               borderRadius: "10px",
-              padding: "10px",
+              padding: "12px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
@@ -376,29 +391,29 @@ export default function VisualGraph({ appState, agentLog = [] }) {
                 {Icons.critic()}
               </div>
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <span style={{ fontSize: "9px", fontWeight: 800, color: "#fff", fontFamily: "Outfit, sans-serif" }}>Critic review?</span>
-                <span style={{ fontSize: "7px", color: "#52526a" }}>Verification checks</span>
+                <span style={{ fontSize: "12px", fontWeight: 800, color: "#fff", fontFamily: "Outfit, sans-serif" }}>Critic review?</span>
+                <span style={{ fontSize: "9px", color: "#52526a" }}>Verification checks</span>
               </div>
             </div>
           </div>
         </foreignObject>
         <circle cx={criticNode.x} cy={criticNode.y + criticNode.h / 2} r="4" fill="#2a2a3a" stroke="#fff" strokeWidth="1" />
         <circle cx={criticNode.x + criticNode.w} cy={criticNode.y + 20} r="4" fill="#2a2a3a" stroke="#fff" strokeWidth="1" />
-        <text x={criticNode.x + criticNode.w - 18} y="134" fontSize="8" fill="#52526a" fontWeight="bold">true</text>
-        
-        <circle cx={criticNode.x + criticNode.w} cy={criticNode.y + 50} r="4" fill="#2a2a3a" stroke="#fff" strokeWidth="1" />
-        <text x={criticNode.x + criticNode.w - 22} y="164" fontSize="8" fill="#52526a" fontWeight="bold">false</text>
+        <text x={criticNode.x + criticNode.w - 24} y={criticNode.y + 24} fontSize="10" fill="#52526a" fontWeight="bold">true</text>
+
+        <circle cx={criticNode.x + criticNode.w} cy={criticNode.y + 60} r="4" fill="#2a2a3a" stroke="#fff" strokeWidth="1" />
+        <text x={criticNode.x + criticNode.w - 28} y={criticNode.y + 64} fontSize="10" fill="#52526a" fontWeight="bold">false</text>
 
         {/* ── 4. EXECUTOR NODE ── */}
         <foreignObject x={executorNode.x} y={executorNode.y} width={executorNode.w} height={executorNode.h}>
-          <div 
+          <div
             style={{
               width: `${executorNode.w - 4}px`,
               height: `${executorNode.h - 4}px`,
               background: "#161622",
               border: `2px solid ${appState === "complete" ? "#34d399" : "#2a2a3a"}`,
               borderRadius: "10px",
-              padding: "10px",
+              padding: "12px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
@@ -410,8 +425,8 @@ export default function VisualGraph({ appState, agentLog = [] }) {
                 {Icons.executor()}
               </div>
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <span style={{ fontSize: "9px", fontWeight: 800, color: "#fff", fontFamily: "Outfit, sans-serif" }}>Sandbox Run</span>
-                <span style={{ fontSize: "7px", color: "#52526a" }}>Execute code</span>
+                <span style={{ fontSize: "12px", fontWeight: 800, color: "#fff", fontFamily: "Outfit, sans-serif" }}>Sandbox Run</span>
+                <span style={{ fontSize: "9px", color: "#52526a" }}>Execute code</span>
               </div>
             </div>
           </div>
@@ -420,14 +435,14 @@ export default function VisualGraph({ appState, agentLog = [] }) {
 
         {/* ── 5. DEBUGGER NODE ── */}
         <foreignObject x={debuggerNode.x} y={debuggerNode.y} width={debuggerNode.w} height={debuggerNode.h}>
-          <div 
+          <div
             style={{
               width: `${debuggerNode.w - 4}px`,
               height: `${debuggerNode.h - 4}px`,
               background: "#161622",
               border: `2px solid ${isNodeActive("debugger") ? "#f87171" : "#2a2a3a"}`,
               borderRadius: "10px",
-              padding: "10px",
+              padding: "12px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
@@ -439,8 +454,8 @@ export default function VisualGraph({ appState, agentLog = [] }) {
                 {Icons.debugger()}
               </div>
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <span style={{ fontSize: "9px", fontWeight: 800, color: "#fff", fontFamily: "Outfit, sans-serif" }}>Auto Debugger</span>
-                <span style={{ fontSize: "7px", color: "#52526a" }}>Compiler self-heal</span>
+                <span style={{ fontSize: "12px", fontWeight: 800, color: "#fff", fontFamily: "Outfit, sans-serif" }}>Auto Debugger</span>
+                <span style={{ fontSize: "9px", color: "#52526a" }}>Compiler self-heal</span>
               </div>
             </div>
           </div>
@@ -455,6 +470,10 @@ export default function VisualGraph({ appState, agentLog = [] }) {
           to {
             stroke-dashoffset: -20;
           }
+        }
+        @keyframes triggerShake {
+          0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(96, 165, 250, 0)); }
+          50% { transform: scale(1.03); filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.4)); }
         }
         .pulse-flow {
           animation: strokePlay 0.85s linear infinite;

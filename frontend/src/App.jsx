@@ -182,7 +182,7 @@ export default function App() {
     try {
       const res = await axios.post(`${API}/sessions/burn`);
       toast.success(res.data.message || "SSD Sessions burned successfully");
-    } catch (_e) {
+    } catch {
       toast.error("Failed to burn local sessions");
     }
   }

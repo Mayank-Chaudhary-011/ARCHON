@@ -66,14 +66,16 @@ export default function App() {
     }
   }
 
-  // Auto build loop
+  // Auto build loop — only fires when there are files still remaining.
+  // filesRemaining > 0 guard prevents a second buildNext() when the last
+  // file finishes (buildNext already calls itself in that branch).
   useEffect(() => {
     if (autoMode && appState === "building" && filesRemaining > 0) {
       const timer = setTimeout(() => buildNext(), 800);
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoMode, appState, filesRemaining, generatedFiles]);
+  }, [autoMode, appState, filesRemaining]);
 
   async function handlePlan(task) {
     setAppState("planning");
@@ -239,10 +241,15 @@ export default function App() {
         log("CODER", `${data.filename} ready`);
 
         if (data.files_remaining === 0) {
+          // Last file done — call buildNext ONCE to trigger sandbox execution.
+          // Do NOT set autoMode here; the useEffect guard (filesRemaining > 0)
+          // ensures it won't also fire a duplicate call.
           buildNext();
         } else if (!autoMode) {
-          setAppState("building");
+          // Manual mode: pause and wait for user to click Build Next
+          setAppState("plan_ready");
         }
+        // autoMode && files_remaining > 0 → useEffect will schedule next call
       }
     } catch (e) {
       log("ERROR", e.message);
@@ -252,14 +259,16 @@ export default function App() {
   }
 
   function handleAutoAll() {
-    setAutoMode(true);
+    // Start immediately. autoMode=true is set after the first buildNext call
+    // so the useEffect doesn't also fire a concurrent second request.
     buildNext();
+    setAutoMode(true);
   }
 
   function handleNeverAsk() {
     localStorage.setItem("mycoder_auto", "true");
-    setAutoMode(true);
     buildNext();
+    setAutoMode(true);
   }
 
   async function handleApprove() {

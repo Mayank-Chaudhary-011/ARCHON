@@ -202,25 +202,28 @@ async def build_next_file(req: BuildNextRequest):
     if not remaining:
         # All files done — run sandbox ONLY for Python entry points
         entry = session["implementation"].get("entry_point", "main.py")
-        entry_code = generated_files.get(entry, "")
+        all_files = session["generated_files"]
 
         output = ""
-        if entry.endswith(".py") and entry_code:
-            from backend.tools.executor import run_code_in_sandbox
-            result = run_code_in_sandbox(entry_code)
+        if entry.endswith(".py") and all_files:
+            # Use multi-file sandbox so cross-file imports (e.g. data_loader, utils)
+            # are all present in the same temp directory at execution time.
+            from backend.tools.executor import run_project_in_sandbox
+            result = run_project_in_sandbox(all_files, entry)
             output = result.get("output", "") if result["success"] else f"Error: {result.get('error', '')}"
-        elif entry_code:
+        elif all_files:
             # Non-Python project (HTML/JS/React etc.) — no sandbox needed
             lang = entry.split(".")[-1].upper()
             output = f"✓ {lang} project generated successfully. Open '{entry}' in your browser to view it."
 
         return {
             "status":          "complete",
-            "generated_files": generated_files,
+            "generated_files": all_files,
             "output":          output,
             "files_remaining": 0,
             "tokens":          {**token_log}
         }
+
 
     # Generate next file
     result = generate_one_file(

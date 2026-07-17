@@ -8,8 +8,12 @@
 [![LangGraph](https://img.shields.io/badge/LangGraph-Orchestration-FF6B35?style=flat)](https://langchain-ai.github.io/langgraph/)
 [![Supabase](https://img.shields.io/badge/Supabase-Build_Cache-3ECF8E?style=flat&logo=supabase)](https://supabase.com)
 
-## 🎥 Demo Video
-[![Watch the Demo](https://img.shields.io/badge/Watch-Walkthrough_Video-red?style=for-the-badge&logo=youtube&logoColor=white)](YOUR_VIDEO_URL_HERE)
+## Demo
+
+| Mode | Video |
+|---|---|
+| **Build** — Generate multi-file project from prompt | [![Build Demo](https://img.shields.io/badge/Watch-Build_Demo-red?style=for-the-badge&logo=loom)](https://www.loom.com/share/14aabde31d33410b9842fe900de06637) |
+| **Debug** — Fix broken code autonomously | [![Debug Demo](https://img.shields.io/badge/Watch-Debug_Demo-orange?style=for-the-badge&logo=loom)](https://www.loom.com/share/d35d5eda4a13437c972a946c64343b2e) |
 
 ---
 
@@ -192,8 +196,6 @@ Open `http://localhost:5173`
 | Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/api/plan` | Create implementation plan for a task |
-| `POST` | `/api/build/next` | Generate next file in the plan |
-| `POST` | `/api/build/approve` | Human approves a file that failed critic |
 | `POST` | `/api/debug` | Debug broken code with error message |
 | `GET` | `/api/history` | Retrieve past runs from Supabase memory |
 | `GET` | `/api/status/{session_id}` | Check session build status |

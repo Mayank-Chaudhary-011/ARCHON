@@ -29,7 +29,7 @@ async def startup_event():
     project = os.getenv("LANGCHAIN_PROJECT", "default")
     if tracing:
         print("\n" + "="*60)
-        print(f"🚀 [OBSERVABILITY] LangSmith tracing is active!")
+        print("🚀 [OBSERVABILITY] LangSmith tracing is active!")
         print(f"📁 Project Name: '{project}'")
         print("🔗 Traces are streaming live to your LangSmith Dashboard.")
         print("="*60 + "\n")

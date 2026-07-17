@@ -1,4 +1,4 @@
-from typing import TypedDict, List
+from typing import TypedDict
 
 class AgentState(TypedDict, total=False):
     task:              str

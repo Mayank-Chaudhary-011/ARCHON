@@ -1,0 +1,16 @@
+# Ruff configuration file
+
+# Exclude developer test folders and virtual environments
+extend-exclude = [
+    "tests",
+    "scripts",
+    "coder_agent",
+    "venv",
+    ".venv",
+    ".git"
+]
+
+[lint]
+# Ignore E402 (Module level import not at top of file)
+# because we call load_dotenv() before importing backend packages
+ignore = ["E402"]

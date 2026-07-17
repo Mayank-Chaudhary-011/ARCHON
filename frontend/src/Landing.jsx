@@ -388,7 +388,7 @@ export default function Landing() {
             variants={staggerContainer}
             style={{ display: "flex", gap: "12px" }}
           >
-            {AGENTS.map((agent, i) => (
+            {AGENTS.map((agent) => (
               <motion.div key={agent.label} variants={fadeInUp} style={{ flex: 1 }}>
                 <div style={{
                   padding: "24px 16px", borderRadius: "14px",

@@ -171,7 +171,7 @@ Strict rules:
     }
 
 def critic_node(state: AgentState) -> AgentState:
-    print(f"\n[CRITIC] Reviewing code...")
+    print("\n[CRITIC] Reviewing code...")
 
     code = state.get('code', '')
     current_file = state.get('current_file', 'unknown')
@@ -354,7 +354,7 @@ def implementation_planner_node(state: AgentState) -> AgentState:
     try:
         raw = response.content.replace("```json", "").replace("```", "").strip()
         implementation = json.loads(raw)
-    except:
+    except Exception:
         implementation = {
             "project_name": "Project",
             "description": state.get("task", ""),

@@ -6,7 +6,6 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import Sidebar from "../components/Sidebar";
 import Editor from "../components/Editor";
-import InputPanel from "../components/InputPanel";
 import ActionBar from "../components/ActionBar";
 
 const API = "http://localhost:8000/api";
@@ -16,7 +15,6 @@ export default function App() {
   const [sessionId] = useState(() => uuid());
   const [implementation, setImpl] = useState(null);
   const [generatedFiles, setFiles] = useState({});
-  const [planMd, setPlanMd] = useState("");
   const [activeFile, setActiveFile] = useState(null);
   const [openTabs, setOpenTabs] = useState([]);
   const [output, setOutput] = useState("");
@@ -32,7 +30,6 @@ export default function App() {
     setAppState("idle");
     setImpl(null);
     setFiles({});
-    setPlanMd("");
     setActiveFile(null);
     setOpenTabs([]);
     setOutput("");
@@ -75,13 +72,13 @@ export default function App() {
       const timer = setTimeout(() => buildNext(), 800);
       return () => clearTimeout(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoMode, appState, filesRemaining, generatedFiles]);
 
   async function handlePlan(task) {
     setAppState("planning");
     setImpl(null);
     setFiles({});
-    setPlanMd("");
     setActiveFile(null);
     setOpenTabs([]);
     setOutput("");
@@ -100,7 +97,6 @@ export default function App() {
       const data = res.data;
 
       setImpl(data.implementation);
-      setPlanMd(data.plan_md);
       setRemaining(data.total_files);
       setFiles({
         "Agent Pipeline": "",
@@ -287,6 +283,7 @@ export default function App() {
       if (remaining === 0) buildNext();
       else setAppState("building");
     } catch (e) {
+      log("ERROR", e.message);
       toast.error("Approval failed");
     }
   }

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 
 // SVG Icons to replace emojis professionally
 const Icons = {
@@ -61,59 +60,62 @@ export default function VisualGraph({ appState, agentLog = [] }) {
   const [activeNode, setActiveNode] = useState(null);
   const [pathState, setPathState] = useState("idle");
 
-  // Parse states from appState and agentLog
   useEffect(() => {
-    if (appState === "idle") {
-      setActiveNode(null);
-      setPathState("idle");
-      return;
-    }
+    const timer = setTimeout(() => {
+      if (appState === "idle") {
+        setActiveNode(null);
+        setPathState("idle");
+        return;
+      }
 
-    if (appState === "planning") {
-      setActiveNode("trigger");
-      setPathState("planning");
-      return;
-    }
-
-    if (appState === "complete") {
-      setActiveNode("executor");
-      setPathState("complete");
-      return;
-    }
-
-    if (appState === "human_review") {
-      setActiveNode("critic");
-      setPathState("healing");
-      return;
-    }
-
-    if (appState === "building" && agentLog.length > 0) {
-      const lastEntry = agentLog[agentLog.length - 1];
-      const agent = lastEntry.agent?.toUpperCase();
-      const message = lastEntry.message?.toLowerCase() || "";
-
-      if (agent === "PLANNER") {
-        setActiveNode("orchestrator");
+      if (appState === "planning") {
+        setActiveNode("trigger");
         setPathState("planning");
-      } else if (agent === "CODER") {
-        setActiveNode("orchestrator");
-        setPathState("coding");
-      } else if (agent === "CRITIC") {
+        return;
+      }
+
+      if (appState === "complete") {
+        setActiveNode("executor");
+        setPathState("complete");
+        return;
+      }
+
+      if (appState === "human_review") {
         setActiveNode("critic");
-        setPathState("reviewing");
-      } else if (agent === "SYSTEM" && message.includes("self-healing")) {
-        setActiveNode("debugger");
         setPathState("healing");
-      } else {
-        if (message.includes("generate") || message.includes("coder")) {
+        return;
+      }
+
+      if (appState === "building" && agentLog.length > 0) {
+        const lastEntry = agentLog[agentLog.length - 1];
+        const agent = lastEntry.agent?.toUpperCase();
+        const message = lastEntry.message?.toLowerCase() || "";
+
+        if (agent === "PLANNER") {
+          setActiveNode("orchestrator");
+          setPathState("planning");
+        } else if (agent === "CODER") {
           setActiveNode("orchestrator");
           setPathState("coding");
-        } else if (message.includes("review") || message.includes("critic")) {
+        } else if (agent === "CRITIC") {
           setActiveNode("critic");
           setPathState("reviewing");
+        } else if (agent === "SYSTEM" && message.includes("self-healing")) {
+          setActiveNode("debugger");
+          setPathState("healing");
+        } else {
+          if (message.includes("generate") || message.includes("coder")) {
+            setActiveNode("orchestrator");
+            setPathState("coding");
+          } else if (message.includes("review") || message.includes("critic")) {
+            setActiveNode("critic");
+            setPathState("reviewing");
+          }
         }
       }
-    }
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [appState, agentLog]);
 
   const isNodeActive = (id) => activeNode === id;

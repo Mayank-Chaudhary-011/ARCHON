@@ -27,19 +27,6 @@ function fileColor(filename) {
   return LANG_COLORS[ext] || "#888";
 }
 
-function fileIcon(filename) {
-  const ext = filename.split(".").pop();
-  const icons = {
-    py: "🐍",
-    js: "⚡",
-    jsx: "⚛",
-    html: "🌐",
-    css: "🎨",
-    json: "📋",
-    md: "📝",
-  };
-  return icons[ext] || "📄";
-}
 
 export default function Sidebar({
   mode,

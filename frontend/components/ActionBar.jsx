@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function ActionBar({
   appState,
   mode,
-  setMode,
   filesRemaining,
   pendingReview,
   onPlan,

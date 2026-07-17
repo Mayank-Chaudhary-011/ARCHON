@@ -148,6 +148,7 @@ Strict rules:
 - IDs, class names, and function names must match the already-generated files exactly.
 - If this is HTML, use semantic tags and link CSS/JS files correctly.
 - If this is JS/Python, import only what exists in the project files listed above.
+- Do NOT add excessive inline comments or explain simple steps. Keep code clean and self-documenting. Only add a concise, highly relevant docstring/comment at the top of the file, and at most 1 or 2 relevant comments within the file logic where strictly necessary.
 """
 
     response = coder_llm.invoke(prompt)
@@ -296,6 +297,7 @@ Here is the error or critique:
 
 Fix the bug and return ONLY the complete corrected {language} code.
 No explanation. No backticks. No markdown.
+Do NOT add excessive inline comments. Keep the code clean and self-documenting with only a top docstring and at most 1 or 2 relevant comments within the file logic if needed.
 """
 
     response = coder_llm.invoke(prompt)

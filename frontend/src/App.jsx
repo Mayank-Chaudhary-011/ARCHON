@@ -129,16 +129,16 @@ export default function App() {
   // ── History helpers ──────────────────────────────────────────────
   function saveToHistory(impl, files, tokens, out, runMode = "generate") {
     const entry = {
-      id:           uuid(),
-      timestamp:    Date.now(),
+      id: uuid(),
+      timestamp: Date.now(),
       project_name: runMode === "debug" ? "Debug Fix" : (impl?.project_name || "Untitled"),
-      task:         runMode === "debug" ? "Code Correction Fix" : (impl?.description  || ""),
-      tech_stack:   runMode === "debug" ? ["Debug"] : (impl?.tech_stack   || []),
+      task: runMode === "debug" ? "Code Correction Fix" : (impl?.description || ""),
+      tech_stack: runMode === "debug" ? ["Debug"] : (impl?.tech_stack || []),
       implementation: impl,
       generatedFiles: files,
-      tokens:       tokens?.total_tokens || 0,
-      output:       out || "",
-      mode:         runMode,
+      tokens: tokens?.total_tokens || 0,
+      output: out || "",
+      mode: runMode,
     };
     setBuildHistory((prev) => {
       const updated = [entry, ...prev].slice(0, 15);
@@ -155,7 +155,7 @@ export default function App() {
     setActiveFile(tabs[0] || null);
     setOutput(run.output || "");
     setAgentLog([{ agent: "HISTORY", message: `Restored — ${run.project_name}` }]);
-    
+
     if (run.mode === "debug") {
       setMode("debug");
       setTaskChecklist([]);
@@ -165,7 +165,7 @@ export default function App() {
         run.implementation?.files?.map((f) => ({ ...f, status: "done" })) || []
       );
     }
-    
+
     setTokenStats({ total_tokens: run.tokens, efficiency_score: 0 });
     setRemaining(0);
     setAppState("complete");
@@ -182,7 +182,7 @@ export default function App() {
     try {
       const res = await axios.post(`${API}/sessions/burn`);
       toast.success(res.data.message || "SSD Sessions burned successfully");
-    } catch (e) {
+    } catch (_e) {
       toast.error("Failed to burn local sessions");
     }
   }
@@ -286,8 +286,8 @@ export default function App() {
     try {
       const res = await axios.post(`${API}/build/approve`, {
         session_id: sessionId,
-        filename:   pendingReview.filename,
-        code:       pendingReview.code,
+        filename: pendingReview.filename,
+        code: pendingReview.code,
       });
       setFiles((prev) => ({ ...prev, [pendingReview.filename]: pendingReview.code }));
       openTab(pendingReview.filename);
@@ -345,7 +345,7 @@ export default function App() {
       setFiles(files);
       openTab("fixed_code.py");
       setOutput(data.output);
-      
+
       if (data.tokens) setTokenStats(data.tokens);
       setAppState("complete");
 

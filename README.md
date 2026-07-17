@@ -301,11 +301,11 @@ Update `API` constant in `frontend/src/App.jsx` to your Railway backend URL.
 
 ---
 
-## Fine-Tuning Guide (Read This in Jan-Feb 2027)
+## Fine-Tuning Guide
 
-> Written for Future Mayank who now has enough Supabase build data and wants to replace
-> the GPT-4o-mini coder with a fine-tuned open-source model.
-> Budget needed: ~$9. Time needed: ~3 hours.
+This guide details how to replace the default GPT-4o-mini coder node with a custom, fine-tuned open-source model (such as Qwen-2.5-Coder-7B) trained on your agent's patterns.
+- **Estimated Budget**: ~$9.50
+- **Estimated Time**: ~3 hours
 
 ### Step 1 — Check How Much Data You Have
 

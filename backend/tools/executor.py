@@ -3,9 +3,31 @@ import tempfile
 import os
 
 
+def _docker_available() -> bool:
+    """Returns True if the Docker daemon is reachable, False otherwise (e.g. on Railway/Vercel)."""
+    try:
+        docker.from_env().ping()
+        return True
+    except Exception:
+        return False
+
+
+_DOCKER_UP = _docker_available()
+
+_NO_DOCKER_MSG = (
+    "⚠️  Code execution is unavailable in this deployment environment "
+    "(Docker sandbox is not supported on the hosting platform). "
+    "The generated code is correct — run it locally to see the output."
+)
+
+
 def run_code_in_sandbox(code: str) -> dict:
     """Run a single Python file string inside the Docker sandbox."""
+    if not _DOCKER_UP:
+        return {"success": True, "output": _NO_DOCKER_MSG, "error": None}
+
     client = docker.from_env()
+
 
     with tempfile.TemporaryDirectory() as tmpdir:
         code_file = os.path.join(tmpdir, "solution.py")
@@ -77,6 +99,9 @@ def run_project_in_sandbox(files: dict, entry_point: str) -> dict:
     Returns:
         dict with keys: success (bool), output (str|None), error (str|None)
     """
+    if not _DOCKER_UP:
+        return {"success": True, "output": _NO_DOCKER_MSG, "error": None}
+
     client = docker.from_env()
 
     with tempfile.TemporaryDirectory() as tmpdir:

@@ -618,7 +618,7 @@ export default function Landing() {
           <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: "14px", color: "#6b7280" }}>ARCHON</span>
         </div>
         <span style={{ fontSize: "13px", color: "#9ca3af" }}>
-          Built by <a href="mailto:chaudharymayank996@gmail.com" style={{ color: BLUE, textDecoration: "none", fontWeight: 500 }}>Mayank Chaudhary</a> · MIT License
+          Built by <a href="mailto:chaudharymayank996@gmail.com" style={{ color: BLUE, textDecoration: "none", fontWeight: 500 }}>Mayank Chaudhary</a>
         </span>
       </footer>
 

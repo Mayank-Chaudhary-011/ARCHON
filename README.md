@@ -8,6 +8,9 @@
 [![LangGraph](https://img.shields.io/badge/LangGraph-Orchestration-FF6B35?style=flat)](https://langchain-ai.github.io/langgraph/)
 [![Supabase](https://img.shields.io/badge/Supabase-Vector_Memory-3ECF8E?style=flat&logo=supabase)](https://supabase.com)
 
+## 🎥 Demo Video
+[![Watch the Demo](https://img.shields.io/badge/Watch-Walkthrough_Video-red?style=for-the-badge&logo=youtube&logoColor=white)](YOUR_VIDEO_URL_HERE)
+
 ---
 
 ## What Is ARCHON?
@@ -132,8 +135,8 @@ archon/
 
 ### 1. Clone & Install Backend
 ```bash
-git clone https://github.com/yourusername/archon.git
-cd archon
+git clone https://github.com/Mayank-Chaudhary-011/ARCHON.git
+cd ARCHON
 pip install -r requirements.txt
 ```
 
@@ -503,19 +506,12 @@ This is your moat. A coder model trained on YOUR patterns, running at 10x lower 
 
 **Mayank Chaudhary**
 - Email: chaudharymayank996@gmail.com
-- Location: Lucknow, India
-- B.Tech CSE (AI & Data Science), 2025
 
 ---
 
-## License
 
-MIT — free to use, modify, and distribute.
 
----
-
-> **Note to Future Mayank (Jan-Feb 2027):**
-> Check your Supabase `code_memory` table. If you have 500+ rows with PASS feedback,
-> run `python scripts/export_training_data.py`, spin up a RunPod A100 for 1 hour, run `fine_tune.py`,
-> upload to HuggingFace, swap 3 lines in `nodes.py`. Total: ~3 hours, ~$9.50.
-> You will have a coder model trained on ARCHON patterns. That is your moat.
+> **Fine-Tuning Process:**
+> Once your Supabase `code_memory` table has 500+ successful PASS runs, you can run 
+> `python scripts/export_training_data.py` to export your training data, run `fine_tune.py` 
+> on a GPU, and upload the weights to Hugging Face to swap the LLM identifiers in `nodes.py`.

@@ -140,7 +140,7 @@ export default function Landing() {
             >{l}</a>
           ))}
           <button
-            onClick={() => window.location.href("https://github.com/Mayank-Chaudhary-011/ARCHON.git")}
+            onClick={() => window.open("https://github.com/Mayank-Chaudhary-011/ARCHON.git")}
             style={{
               padding: "9px 22px", borderRadius: "9px", border: "none", cursor: "pointer",
               background: BTN.bg, color: "#fff", fontSize: "14px", fontWeight: 600,

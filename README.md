@@ -6,7 +6,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react)](https://react.dev)
 [![LangGraph](https://img.shields.io/badge/LangGraph-Orchestration-FF6B35?style=flat)](https://langchain-ai.github.io/langgraph/)
-[![Supabase](https://img.shields.io/badge/Supabase-Vector_Memory-3ECF8E?style=flat&logo=supabase)](https://supabase.com)
+[![Supabase](https://img.shields.io/badge/Supabase-Build_Cache-3ECF8E?style=flat&logo=supabase)](https://supabase.com)
 
 ## 🎥 Demo Video
 [![Watch the Demo](https://img.shields.io/badge/Watch-Walkthrough_Video-red?style=for-the-badge&logo=youtube&logoColor=white)](YOUR_VIDEO_URL_HERE)
@@ -25,7 +25,7 @@ ARCHON is **not an LLM wrapper**. It is a multi-agent orchestration system where
 - **Human Gate** — Escalate to user when AI cannot solve after 3 attempts
 
 ### The Data Flywheel
-Every successful build is stored as an embedding in Supabase. Future similar tasks retrieve these as context — making ARCHON smarter with every run without retraining.
+Every successful build is stored in Supabase. Future runs retrieve the most recent successful builds as few-shot context to automatically inform the planner and coder models, creating a continuously improving build cache.
 
 ---
 
@@ -85,8 +85,7 @@ START -> planner -> implementation_planner -> coder -> critic
 | **Backend** | FastAPI + Python | REST API, session management |
 | **Frontend** | React 19 + Vite | Editor UI, real-time agent log |
 | **Sandbox** | Docker | Safe isolated code execution |
-| **Vector Memory** | Supabase + pgvector | Past run retrieval via embeddings |
-| **Embeddings** | OpenAI text-embedding-3-small | Semantic similarity search |
+| **Build Cache** | Supabase Database | Store past run templates for few-shot learning |
 | **Animations** | Framer Motion | Micro-interactions |
 | **Code Display** | react-syntax-highlighter | VSCode Dark+ theme |
 | **ZIP Download** | JSZip + file-saver | Export generated project |
@@ -151,46 +150,22 @@ SUPABASE_KEY=your-service-role-key
 ### 3. Supabase Schema
 Run this SQL in your Supabase SQL Editor:
 ```sql
--- Enable pgvector
-CREATE EXTENSION IF NOT EXISTS vector;
-
 -- Memory table for past runs
-CREATE TABLE code_memory (
+CREATE TABLE agent_runs (
     id                BIGSERIAL PRIMARY KEY,
     task              TEXT,
     plan              TEXT,
     code              TEXT,
     feedback          TEXT,
     final_output      TEXT,
-    attempts          INT DEFAULT 1,
+    attempts          INT DEFAULT 0,
+    success           BOOLEAN DEFAULT FALSE,
     tokens_used       INT DEFAULT 0,
     prompt_tokens     INT DEFAULT 0,
     completion_tokens INT DEFAULT 0,
-    efficiency_score  FLOAT DEFAULT 0,
-    embedding         VECTOR(1536),
+    efficiency_score  FLOAT DEFAULT 0.0,
     created_at        TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
-
--- Vector similarity search function
-CREATE OR REPLACE FUNCTION match_code_memory(
-    query_embedding  VECTOR(1536),
-    match_threshold  FLOAT DEFAULT 0.7,
-    match_count      INT DEFAULT 3
-)
-RETURNS TABLE (
-    id BIGINT, task TEXT, code TEXT, feedback TEXT,
-    final_output TEXT, attempts INT, tokens_used INT,
-    efficiency_score FLOAT, similarity FLOAT
-)
-LANGUAGE SQL STABLE AS $$
-    SELECT id, task, code, feedback, final_output, attempts,
-           tokens_used, efficiency_score,
-           1 - (embedding <=> query_embedding) AS similarity
-    FROM   code_memory
-    WHERE  1 - (embedding <=> query_embedding) > match_threshold
-    ORDER  BY embedding <=> query_embedding
-    LIMIT  match_count;
-$$;
 ```
 
 ### 4. Install Frontend
@@ -236,8 +211,8 @@ Language-aware checklist: won't fail HTML for missing return statements, won't f
 ### Human Review Gate
 After 3 failed critic attempts, ARCHON shows the critic feedback and asks: Approve (accept as-is) or Reject (cancel)?
 
-### Vector Memory
-Every successful build is embedded and stored. Future similar tasks retrieve past runs to inform the planner.
+### Relational Build Cache (Supabase Memory)
+Every successful build is stored in a Supabase SQL database. When a new generation task starts, the planner automatically retrieves the 3 most recent successful builds as few-shot context, making the orchestrator smarter over time.
 
 ### Build History
 Last 15 builds saved to localStorage. One click restores any past project instantly — zero tokens spent.

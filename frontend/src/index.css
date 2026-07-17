@@ -1,0 +1,81 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700;800;900&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* ── Backgrounds (ink-black, not pure black) */
+  --bg:        #09090f;
+  --bg2:       #0f0f18;
+  --bg3:       #16161f;
+  --bg4:       #1c1c28;
+
+  /* ── Borders */
+  --border:    #1e1e2e;
+  --border2:   #2a2a3a;
+
+  /* ── Accent — matte cobalt blue (not neon, not purple) */
+  --accent:       #2563eb;
+  --accent-light: #60a5fa;
+  --accent-dim:   #1d4ed8;
+  --accent-bg:    rgba(37,99,235,0.10);
+  --accent-glow:  rgba(37,99,235,0.22);
+
+  /* ── Semantic colors */
+  --green:     #34d399;
+  --green-bg:  rgba(52,211,153,0.10);
+  --red:       #f87171;
+  --red-bg:    rgba(248,113,113,0.10);
+  --yellow:    #fbbf24;
+  --yellow-bg: rgba(251,191,36,0.10);
+  --cyan:      #22d3ee;
+  --purple:    #a78bfa;
+
+  /* ── Text */
+  --text:      #ededf0;
+  --text2:     #8a8a9a;
+  --text3:     #52526a;
+
+  /* ── Agent log colors */
+  --agent-planner:  #60a5fa;
+  --agent-coder:    #fbbf24;
+  --agent-critic:   #f87171;
+  --agent-executor: #22d3ee;
+  --agent-human:    #fb923c;
+  --agent-history:  #a78bfa;
+  --agent-error:    #f87171;
+  --agent-pass:     #34d399;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", sans-serif;
+  height: 100vh;
+  overflow: hidden;
+}
+
+textarea {
+  resize: none;
+  outline: none;
+  border: none;
+}
+
+/* Custom thin scrollbars */
+::-webkit-scrollbar       { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+/* Landing page can overflow */
+body.landing {
+  height: auto;
+  overflow: auto;
+}

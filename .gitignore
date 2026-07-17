@@ -1,0 +1,39 @@
+# ─── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.so
+
+# ─── Virtual environments ─────────────────────────────────
+coder_agent/
+venv/
+env/
+.venv/
+ENV/
+
+# ─── Environment / secrets ───────────────────────────────
+.env
+*.env.local
+
+# ─── Training / fine-tune artifacts ──────────────────────
+archon_training.jsonl
+
+# ─── Node / Frontend ─────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/build/
+
+# ─── OS ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── IDE ─────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo

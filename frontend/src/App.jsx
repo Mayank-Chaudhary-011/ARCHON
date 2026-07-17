@@ -1,0 +1,439 @@
+import { useState, useEffect } from "react";
+import { Toaster, toast } from "react-hot-toast";
+import axios from "axios";
+import { v4 as uuid } from "uuid";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+import Sidebar from "../components/Sidebar";
+import Editor from "../components/Editor";
+import InputPanel from "../components/InputPanel";
+import ActionBar from "../components/ActionBar";
+
+const API = "http://localhost:8000/api";
+
+export default function App() {
+  const [appState, setAppState] = useState("idle");
+  const [sessionId] = useState(() => uuid());
+  const [implementation, setImpl] = useState(null);
+  const [generatedFiles, setFiles] = useState({});
+  const [planMd, setPlanMd] = useState("");
+  const [activeFile, setActiveFile] = useState(null);
+  const [openTabs, setOpenTabs] = useState([]);
+  const [output, setOutput] = useState("");
+  const [agentLog, setAgentLog] = useState([]);
+  const [filesRemaining, setRemaining] = useState(0);
+  const [autoMode, setAutoMode] = useState(
+    () => localStorage.getItem("mycoder_auto") === "true",
+  );
+  const [mode, setMode] = useState("generate");
+
+  function handleModeChange(newMode) {
+    setMode(newMode);
+    setAppState("idle");
+    setImpl(null);
+    setFiles({});
+    setPlanMd("");
+    setActiveFile(null);
+    setOpenTabs([]);
+    setOutput("");
+    setAgentLog([]);
+    setTaskChecklist([]);
+    setTokenStats(null);
+    setHumanReviewPending(false);
+  }
+  const [taskChecklist, setTaskChecklist] = useState([]);
+  const [tokenStats, setTokenStats] = useState(null);
+  const [humanReviewPending, setHumanReviewPending] = useState(false);
+  const [pendingReview, setPendingReview] = useState(null);
+  const [buildHistory, setBuildHistory] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("archon_history") || "[]"); }
+    catch { return []; }
+  });
+
+  function log(agent, message) {
+    setAgentLog((prev) => [...prev, { agent, message }]);
+  }
+
+  function openTab(filename) {
+    setOpenTabs((prev) =>
+      prev.includes(filename) ? prev : [...prev, filename],
+    );
+    setActiveFile(filename);
+  }
+
+  function closeTab(filename) {
+    const newTabs = openTabs.filter((t) => t !== filename);
+    setOpenTabs(newTabs);
+    if (activeFile === filename) {
+      setActiveFile(newTabs[newTabs.length - 1] || null);
+    }
+  }
+
+  // Auto build loop
+  useEffect(() => {
+    if (autoMode && appState === "building" && filesRemaining > 0) {
+      const timer = setTimeout(() => buildNext(), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [autoMode, appState, filesRemaining, generatedFiles]);
+
+  async function handlePlan(task) {
+    setAppState("planning");
+    setImpl(null);
+    setFiles({});
+    setPlanMd("");
+    setActiveFile(null);
+    setOpenTabs([]);
+    setOutput("");
+    setAgentLog([]);
+    setTaskChecklist([]);
+    setTokenStats(null);
+    setHumanReviewPending(false);
+
+    log("PLANNER", "Generating implementation plan...");
+
+    try {
+      const res = await axios.post(`${API}/plan`, {
+        task,
+        session_id: sessionId,
+      });
+      const data = res.data;
+
+      setImpl(data.implementation);
+      setPlanMd(data.plan_md);
+      setRemaining(data.total_files);
+      setFiles({
+        "Agent Pipeline": "",
+        "plan.md": data.plan_md
+      });
+      setOpenTabs(["Agent Pipeline", "plan.md"]);
+      setActiveFile("Agent Pipeline");
+      setAppState("plan_ready");
+
+      // Initialise task checklist from the file list
+      const files = data.implementation?.files || [];
+      setTaskChecklist(files.map((f) => ({ filename: f.filename, description: f.description, status: "pending" })));
+
+      log("PLANNER", `Plan ready — ${data.total_files} files to generate`);
+      if (data.tracing_active) {
+        log("SYSTEM", "LangSmith Observability active — traces streaming to dashboard");
+      } else {
+        log("SYSTEM", "LangSmith Observability offline");
+      }
+      toast.success("Implementation plan ready");
+    } catch (e) {
+      log("ERROR", e.message);
+      toast.error("Planning failed");
+      setAppState("idle");
+    }
+  }
+
+  // ── History helpers ──────────────────────────────────────────────
+  function saveToHistory(impl, files, tokens, out, runMode = "generate") {
+    const entry = {
+      id:           uuid(),
+      timestamp:    Date.now(),
+      project_name: runMode === "debug" ? "Debug Fix" : (impl?.project_name || "Untitled"),
+      task:         runMode === "debug" ? "Code Correction Fix" : (impl?.description  || ""),
+      tech_stack:   runMode === "debug" ? ["Debug"] : (impl?.tech_stack   || []),
+      implementation: impl,
+      generatedFiles: files,
+      tokens:       tokens?.total_tokens || 0,
+      output:       out || "",
+      mode:         runMode,
+    };
+    setBuildHistory((prev) => {
+      const updated = [entry, ...prev].slice(0, 15);
+      localStorage.setItem("archon_history", JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  function handleRestoreRun(run) {
+    setImpl(run.implementation);
+    setFiles(run.generatedFiles);
+    const tabs = Object.keys(run.generatedFiles);
+    setOpenTabs(tabs);
+    setActiveFile(tabs[0] || null);
+    setOutput(run.output || "");
+    setAgentLog([{ agent: "HISTORY", message: `Restored — ${run.project_name}` }]);
+    
+    if (run.mode === "debug") {
+      setMode("debug");
+      setTaskChecklist([]);
+    } else {
+      setMode("generate");
+      setTaskChecklist(
+        run.implementation?.files?.map((f) => ({ ...f, status: "done" })) || []
+      );
+    }
+    
+    setTokenStats({ total_tokens: run.tokens, efficiency_score: 0 });
+    setRemaining(0);
+    setAppState("complete");
+    toast.success(`↩ Restored: ${run.project_name}`);
+  }
+
+  function handleClearHistory() {
+    setBuildHistory([]);
+    localStorage.removeItem("archon_history");
+    toast("History cleared");
+  }
+
+  async function buildNext() {
+    setAppState("building");
+    log("CODER", "Generating next file...");
+
+    // Mark next pending file as 'building' in the checklist
+    setTaskChecklist((prev) => {
+      const nextIdx = prev.findIndex((t) => t.status === "pending");
+      if (nextIdx === -1) return prev;
+      return prev.map((t, i) => (i === nextIdx ? { ...t, status: "building" } : t));
+    });
+
+    try {
+      const res = await axios.post(`${API}/build/next`, {
+        session_id: sessionId,
+      });
+      const data = res.data;
+
+      if (data.tokens) setTokenStats(data.tokens);
+
+      // Log inner coder/critic self-healing details in the UI
+      if (data.logs && data.logs.length > 0) {
+        data.logs.forEach((item) => {
+          log(item.agent, item.message);
+        });
+      }
+
+      // Human review escalation — critic failed 3 times
+      if (data.status === "human_review") {
+        setPendingReview({ filename: data.filename, code: data.code, feedback: data.feedback });
+        setTaskChecklist((prev) =>
+          prev.map((t) => (t.filename === data.filename ? { ...t, status: "building" } : t))
+        );
+        setAppState("human_review");
+        log("HUMAN", `Review needed: ${data.filename} failed critic`);
+        toast("👀 Agent needs your review", { duration: 4000 });
+        return;
+      }
+
+      if (data.status === "complete") {
+        const finalFiles = { ...generatedFiles, ...data.generated_files };
+        setFiles(finalFiles);
+        setOutput(data.output);
+        setRemaining(0);
+        setTaskChecklist((prev) => prev.map((t) => ({ ...t, status: "done" })));
+        setAppState("complete");
+        // Save to local history — zero extra tokens
+        saveToHistory(implementation, finalFiles, data.tokens || tokenStats, data.output);
+        log("EXECUTOR", `Done. Output: ${data.output || "no output"}`);
+        toast.success("Project built successfully ✨");
+        return;
+      }
+
+      if (data.status === "file_ready") {
+        setFiles((prev) => ({ ...prev, [data.filename]: data.code }));
+        openTab(data.filename);
+        setRemaining(data.files_remaining);
+        // Mark this file as done
+        setTaskChecklist((prev) =>
+          prev.map((t) => (t.filename === data.filename ? { ...t, status: "done" } : t))
+        );
+        log("CODER", `${data.filename} ready`);
+
+        if (data.files_remaining === 0) {
+          buildNext();
+        } else if (!autoMode) {
+          setAppState("building");
+        }
+      }
+    } catch (e) {
+      log("ERROR", e.message);
+      toast.error("Build failed");
+      setAppState("plan_ready");
+    }
+  }
+
+  function handleAutoAll() {
+    setAutoMode(true);
+    buildNext();
+  }
+
+  function handleNeverAsk() {
+    localStorage.setItem("mycoder_auto", "true");
+    setAutoMode(true);
+    buildNext();
+  }
+
+  async function handleApprove() {
+    if (!pendingReview) return;
+    log("HUMAN", `Approved ${pendingReview.filename}`);
+    try {
+      const res = await axios.post(`${API}/build/approve`, {
+        session_id: sessionId,
+        filename:   pendingReview.filename,
+        code:       pendingReview.code,
+      });
+      setFiles((prev) => ({ ...prev, [pendingReview.filename]: pendingReview.code }));
+      openTab(pendingReview.filename);
+      setTaskChecklist((prev) =>
+        prev.map((t) => (t.filename === pendingReview.filename ? { ...t, status: "done" } : t))
+      );
+      const remaining = res.data.files_remaining;
+      setRemaining(remaining);
+      setPendingReview(null);
+      toast.success(`${pendingReview.filename} approved`);
+      if (remaining === 0) buildNext();
+      else setAppState("building");
+    } catch (e) {
+      toast.error("Approval failed");
+    }
+  }
+
+  function handleReject() {
+    log("HUMAN", "Build rejected");
+    setPendingReview(null);
+    setAppState("idle");
+    toast.error("Build cancelled");
+  }
+
+  async function handleDownloadZip() {
+    const zip = new JSZip();
+    Object.entries(generatedFiles).forEach(([name, code]) => {
+      if (name !== "plan.md") zip.file(name, code);
+    });
+    const blob = await zip.generateAsync({ type: "blob" });
+    const projectName = implementation?.project_name?.replace(/\s+/g, "_") || "archon_project";
+    saveAs(blob, `${projectName}.zip`);
+    toast.success("ZIP downloaded!");
+  }
+
+  async function handleDebug(brokenCode, errorMessage) {
+    setAppState("planning");
+    setFiles({});
+    setActiveFile(null);
+    setOpenTabs([]);
+    setOutput("");
+    setAgentLog([]);
+
+    log("DEBUGGER", "Analyzing error...");
+
+    try {
+      const res = await axios.post(`${API}/debug`, {
+        broken_code: brokenCode,
+        error_message: errorMessage,
+      });
+      const data = res.data;
+
+      const files = { "fixed_code.py": data.fixed_code };
+      setFiles(files);
+      openTab("fixed_code.py");
+      setOutput(data.output);
+      
+      if (data.tokens) setTokenStats(data.tokens);
+      setAppState("complete");
+
+      // Save debug run to history list
+      saveToHistory(null, files, data.tokens, data.output, "debug");
+
+      log("DEBUGGER", "Fix ready");
+      log("EXECUTOR", `Output: ${data.output}`);
+      toast.success("Code fixed");
+    } catch (e) {
+      log("ERROR", e.message);
+      toast.error("Debug failed");
+      setAppState("idle");
+    }
+  }
+
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "260px 1fr",
+        height: "100vh",
+        overflow: "hidden",
+      }}
+    >
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "#1a1a1a",
+            color: "#e8e8e8",
+            border: "1px solid #2a2a2a",
+            fontSize: "13px",
+          },
+        }}
+      />
+
+      <Sidebar
+        appState={appState}
+        mode={mode}
+        setMode={handleModeChange}
+        implementation={implementation}
+        generatedFiles={generatedFiles}
+        activeFile={activeFile}
+        onFileClick={openTab}
+        agentLog={agentLog}
+        output={output}
+        filesRemaining={filesRemaining}
+        taskChecklist={taskChecklist}
+        tokenStats={tokenStats}
+        humanReviewPending={humanReviewPending}
+        buildHistory={buildHistory}
+        onRestoreRun={handleRestoreRun}
+        onClearHistory={handleClearHistory}
+      />
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows:
+            appState === "idle" || appState === "planning"
+              ? "1fr 220px"
+              : appState === "plan_ready"
+                ? "1fr 120px"
+                : appState === "building"
+                  ? "1fr 100px"
+                  : appState === "human_review"
+                    ? "1fr 140px"
+                    : "1fr 60px",
+          overflow: "hidden",
+          borderLeft: "1px solid var(--border)",
+          transition: "grid-template-rows 0.3s",
+        }}
+      >
+        <Editor
+          openTabs={openTabs}
+          activeFile={activeFile}
+          generatedFiles={generatedFiles}
+          onTabClick={setActiveFile}
+          onTabClose={closeTab}
+          appState={appState}
+          agentLog={agentLog}
+        />
+
+        <ActionBar
+          appState={appState}
+          mode={mode}
+          setMode={handleModeChange}
+          filesRemaining={filesRemaining}
+          pendingReview={pendingReview}
+          onPlan={handlePlan}
+          onDebug={handleDebug}
+          onBuildStart={() => buildNext()}
+          onBuildNext={() => buildNext()}
+          onAutoAll={handleAutoAll}
+          onNeverAsk={handleNeverAsk}
+          onCancel={() => setAppState("idle")}
+          onReset={() => setAppState("idle")}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onDownloadZip={handleDownloadZip}
+        />
+      </div>
+    </div>
+  );
+}

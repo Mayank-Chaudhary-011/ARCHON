@@ -8,14 +8,10 @@ from backend.graph.nodes import (
     token_log
 )
 from backend.memory.supabase_memory import get_all_runs
+from backend.memory.session_store import save_session, get_session, burn_all_sessions
 
 router = APIRouter()
 
-# In-memory build session store
-# Key: session_id, Value: build state
-# TODO: For production multi-user deployments, replace with Redis or a
-# Supabase-backed session store so sessions survive server restarts.
-build_sessions: dict = {}
 
 
 class PlanRequest(BaseModel):
@@ -169,13 +165,13 @@ async def create_plan(req: PlanRequest):
     tracing_active = os.getenv("LANGCHAIN_TRACING_V2", "false").lower() == "true"
 
     # Store session
-    build_sessions[req.session_id] = {
+    save_session(req.session_id, {
         "task":            req.task,
         "implementation":  implementation,
         "files":           implementation.get("files", []),
         "generated_files": {},
         "plan_md":         plan_md
-    }
+    })
 
     return {
         "status":         "plan_ready",
@@ -188,7 +184,7 @@ async def create_plan(req: PlanRequest):
 
 @router.post("/build/next")
 async def build_next_file(req: BuildNextRequest):
-    session = build_sessions.get(req.session_id)
+    session = get_session(req.session_id)
 
     if not session:
         return {"status": "error", "message": "Session not found"}
@@ -246,7 +242,7 @@ async def build_next_file(req: BuildNextRequest):
 
     # Update session
     session["generated_files"][result["filename"]] = result["code"]
-    build_sessions[req.session_id] = session
+    save_session(req.session_id, session)
 
     remaining_after = [
         f for f in files
@@ -267,12 +263,12 @@ async def build_next_file(req: BuildNextRequest):
 @router.post("/build/approve")
 async def approve_file(req: ApproveRequest):
     """Human approves a file that failed critic — accept it as-is and continue."""
-    session = build_sessions.get(req.session_id)
+    session = get_session(req.session_id)
     if not session:
         return {"status": "error", "message": "Session not found"}
 
     session["generated_files"][req.filename] = req.code
-    build_sessions[req.session_id] = session
+    save_session(req.session_id, session)
 
     remaining = [
         f for f in session["files"]
@@ -334,7 +330,7 @@ async def health():
 @router.get("/status/{session_id}")
 async def session_status(session_id: str):
     """Check the current progress of a build session."""
-    session = build_sessions.get(session_id)
+    session = get_session(session_id)
     if not session:
         return {"status": "not_found", "message": "Session not found or expired"}
     total     = len(session["files"])
@@ -346,4 +342,12 @@ async def session_status(session_id: str):
         "files_done":      done,
         "files_remaining": remaining,
         "progress_pct":    round((done / total * 100) if total else 0, 1),
-    }
+    }
+
+
+@router.post("/sessions/burn")
+async def burn_sessions():
+    """Clears all session JSON files from the SSD/drive sessions folder."""
+    count = burn_all_sessions()
+    return {"status": "success", "message": f"Successfully burned {count} local session files from drive."}
+

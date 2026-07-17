@@ -178,6 +178,15 @@ export default function App() {
     toast("History cleared");
   }
 
+  async function handleBurnSessions() {
+    try {
+      const res = await axios.post(`${API}/sessions/burn`);
+      toast.success(res.data.message || "SSD Sessions burned successfully");
+    } catch (e) {
+      toast.error("Failed to burn local sessions");
+    }
+  }
+
   async function buildNext() {
     setAppState("building");
     log("CODER", "Generating next file...");
@@ -391,6 +400,7 @@ export default function App() {
         buildHistory={buildHistory}
         onRestoreRun={handleRestoreRun}
         onClearHistory={handleClearHistory}
+        onBurnSessions={handleBurnSessions}
       />
 
       <div

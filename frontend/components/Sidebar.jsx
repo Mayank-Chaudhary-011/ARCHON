@@ -43,6 +43,7 @@ export default function Sidebar({
   buildHistory = [],
   onRestoreRun,
   onClearHistory,
+  onBurnSessions,
 }) {
   const [showHistory, setShowHistory] = useState(false);
   return (
@@ -594,17 +595,30 @@ export default function Sidebar({
                       </div>
                     </motion.div>
                   ))}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onClearHistory?.(); }}
-                    style={{
-                      width: "100%", marginTop: "4px", padding: "5px",
-                      borderRadius: "5px", border: "1px solid var(--border)",
-                      background: "transparent", color: "var(--text3)",
-                      cursor: "pointer", fontSize: "10px", fontFamily: "Inter, sans-serif",
-                    }}
-                  >
-                    Clear history
-                  </button>
+                  <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onClearHistory?.(); }}
+                      style={{
+                        flex: 1, padding: "5px",
+                        borderRadius: "5px", border: "1px solid var(--border)",
+                        background: "transparent", color: "var(--text3)",
+                        cursor: "pointer", fontSize: "10px", fontFamily: "Inter, sans-serif",
+                      }}
+                    >
+                      Clear history
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onBurnSessions?.(); }}
+                      style={{
+                        flex: 1, padding: "5px",
+                        borderRadius: "5px", border: "1px solid #ef444433",
+                        background: "transparent", color: "#f87171",
+                        cursor: "pointer", fontSize: "10px", fontFamily: "Inter, sans-serif",
+                      }}
+                    >
+                      🔥 Burn SSD
+                    </button>
+                  </div>
                 </div>
               )}
             </motion.div>

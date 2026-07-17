@@ -616,7 +616,7 @@ export default function Sidebar({
                         cursor: "pointer", fontSize: "10px", fontFamily: "Inter, sans-serif",
                       }}
                     >
-                      🔥 Burn SSD
+                      Delete Session
                     </button>
                   </div>
                 </div>

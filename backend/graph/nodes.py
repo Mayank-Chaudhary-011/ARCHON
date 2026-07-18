@@ -11,12 +11,28 @@ load_dotenv()
 _FALLBACK_KEY = os.getenv("OPENAI_API_KEY", "")
 
 
-def make_llms(api_key: str = ""):
-    """Create per-request LLM clients using the user's API key.
+def make_llms(state: AgentState):
+    """Create per-request LLM clients using the user's configuration.
     Falls back to the server env key only if no key is supplied."""
-    key = api_key.strip() or _FALLBACK_KEY
-    planner = ChatOpenAI(model="gpt-4o",      api_key=key)
-    coder   = ChatOpenAI(model="gpt-4o-mini", api_key=key)
+    provider = state.get("llm_provider", "openai")
+    api_key = state.get("api_key", "").strip() or _FALLBACK_KEY
+    base_url = state.get("base_url", "").strip() or None
+
+    if provider == "openai":
+        m_planner = state.get("model_planner", "").strip() or "gpt-4o"
+        m_coder   = state.get("model_coder", "").strip() or "gpt-4o-mini"
+        endpoint  = base_url or "https://api.openai.com/v1"
+    elif provider == "grok":
+        m_planner = state.get("model_planner", "").strip() or "grok-2"
+        m_coder   = state.get("model_coder", "").strip() or "grok-2"
+        endpoint  = base_url or "https://api.xai.com/v1"
+    else:
+        m_planner = state.get("model_planner", "").strip() or "gpt-4o"
+        m_coder   = state.get("model_coder", "").strip() or "gpt-4o-mini"
+        endpoint  = base_url or None
+
+    planner = ChatOpenAI(model=m_planner, api_key=api_key, base_url=endpoint)
+    coder   = ChatOpenAI(model=m_coder,   api_key=api_key, base_url=endpoint)
     critic  = planner
     return planner, coder, critic
 
@@ -62,7 +78,7 @@ def track_tokens(response):
 
 def planner_node(state:AgentState) -> AgentState:
     reset_token_log()
-    planner_llm, _, _ = make_llms(state.get("api_key", ""))
+    planner_llm, _, _ = make_llms(state)
     print("\n[PLANNER] Breaking down task...")
 
     past_runs = get_similar_runs(state.get("task", ""))
@@ -159,7 +175,7 @@ Strict rules:
 - Do NOT add excessive inline comments or explain simple steps. Keep code clean and self-documenting. Only add a concise, highly relevant docstring/comment at the top of the file, and at most 1 or 2 relevant comments within the file logic where strictly necessary.
 """
 
-    _, coder_llm, _ = make_llms(state.get("api_key", ""))
+    _, coder_llm, _ = make_llms(state)
     response = coder_llm.invoke(prompt)
     track_tokens(response)
 
@@ -222,7 +238,7 @@ VERDICT: PASS or FAIL
 REASON: one concise sentence
 """
 
-    _, _, critic_llm = make_llms(state.get("api_key", ""))
+    _, _, critic_llm = make_llms(state)
     response = critic_llm.invoke(prompt)
     track_tokens(response)
     feedback = response.content
@@ -310,7 +326,7 @@ No explanation. No backticks. No markdown.
 Do NOT add excessive inline comments. Keep the code clean and self-documenting with only a top docstring and at most 1 or 2 relevant comments within the file logic if needed.
 """
 
-    _, coder_llm, _ = make_llms(state.get("api_key", ""))
+    _, coder_llm, _ = make_llms(state)
     response = coder_llm.invoke(prompt)
     track_tokens(response)
     # Strip any accidental markdown fences
@@ -360,7 +376,7 @@ def implementation_planner_node(state: AgentState) -> AgentState:
     - Return ONLY the JSON. No explanation. No backticks.
     """
 
-    planner_llm, _, _ = make_llms(state.get("api_key", ""))
+    planner_llm, _, _ = make_llms(state)
     response = planner_llm.invoke(prompt)
     track_tokens(response)
 

@@ -15,14 +15,22 @@ router = APIRouter()
 
 
 class PlanRequest(BaseModel):
-    task:       str
-    session_id: str
-    api_key:    str = ""
+    task:          str
+    session_id:    str
+    api_key:       str = ""
+    llm_provider:  str = "openai"
+    base_url:      str = ""
+    model_planner: str = ""
+    model_coder:   str = ""
 
 
 class BuildNextRequest(BaseModel):
-    session_id: str
-    api_key:    str = ""
+    session_id:    str
+    api_key:       str = ""
+    llm_provider:  str = "openai"
+    base_url:      str = ""
+    model_planner: str = ""
+    model_coder:   str = ""
 
 
 class ApproveRequest(BaseModel):
@@ -36,13 +44,21 @@ class DebugRequest(BaseModel):
     broken_code:   str
     error_message: str
     api_key:       str = ""
+    llm_provider:  str = "openai"
+    base_url:      str = ""
+    model_planner: str = ""
+    model_coder:   str = ""
 
 
-def generate_plan(task: str, api_key: str = "") -> dict:
+def generate_plan(task: str, api_key: str = "", llm_provider: str = "openai", base_url: str = "", model_planner: str = "", model_coder: str = "") -> dict:
     state: AgentState = {
         "task":            task,
         "mode":            "generate",
         "api_key":         api_key,
+        "llm_provider":    llm_provider,
+        "base_url":        base_url,
+        "model_planner":   model_planner,
+        "model_coder":     model_coder,
         "broken_code":     "",
         "error_message":   "",
         "plan":            "",
@@ -60,7 +76,7 @@ def generate_plan(task: str, api_key: str = "") -> dict:
     return result
 
 
-def generate_one_file(task: str, implementation: dict, files: list, generated_files: dict, api_key: str = "") -> dict:
+def generate_one_file(task: str, implementation: dict, files: list, generated_files: dict, api_key: str = "", llm_provider: str = "openai", base_url: str = "", model_planner: str = "", model_coder: str = "") -> dict:
     # Keep a clean snapshot without the file we are about to generate.
     base_files = generated_files.copy()
 
@@ -68,6 +84,10 @@ def generate_one_file(task: str, implementation: dict, files: list, generated_fi
         "task":            task,
         "mode":            "generate",
         "api_key":         api_key,
+        "llm_provider":    llm_provider,
+        "base_url":        base_url,
+        "model_planner":   model_planner,
+        "model_coder":     model_coder,
         "broken_code":     "",
         "error_message":   "",
         "plan":            implementation.get("description", task),
@@ -140,7 +160,14 @@ def generate_one_file(task: str, implementation: dict, files: list, generated_fi
 
 @router.post("/plan")
 async def create_plan(req: PlanRequest):
-    result = generate_plan(req.task, api_key=req.api_key)
+    result = generate_plan(
+        task=req.task,
+        api_key=req.api_key,
+        llm_provider=req.llm_provider,
+        base_url=req.base_url,
+        model_planner=req.model_planner,
+        model_coder=req.model_coder
+    )
     implementation = result.get("implementation", {})
 
     # Generate plan.md content
@@ -174,6 +201,10 @@ async def create_plan(req: PlanRequest):
     save_session(req.session_id, {
         "task":            req.task,
         "api_key":         req.api_key,
+        "llm_provider":    req.llm_provider,
+        "base_url":        req.base_url,
+        "model_planner":   req.model_planner,
+        "model_coder":     req.model_coder,
         "implementation":  implementation,
         "files":           implementation.get("files", []),
         "generated_files": {},
@@ -234,7 +265,11 @@ async def build_next_file(req: BuildNextRequest):
         implementation  = session["implementation"],
         files           = files,
         generated_files = generated_files,
-        api_key         = session.get("api_key", "")
+        api_key         = session.get("api_key", ""),
+        llm_provider    = session.get("llm_provider", "openai"),
+        base_url        = session.get("base_url", ""),
+        model_planner   = session.get("model_planner", ""),
+        model_coder     = session.get("model_coder", "")
     )
 
     # If critic never passed, escalate to human review
@@ -299,6 +334,11 @@ async def debug_agent(req: DebugRequest):
         "mode":            "debug",
         "broken_code":     req.broken_code,
         "error_message":   req.error_message,
+        "api_key":         req.api_key,
+        "llm_provider":    req.llm_provider,
+        "base_url":        req.base_url,
+        "model_planner":   req.model_planner,
+        "model_coder":     req.model_coder,
         "plan":            "",
         "implementation":  {},
         "files":           [],

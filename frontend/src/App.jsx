@@ -31,10 +31,48 @@ export default function App() {
     () => !localStorage.getItem("archon_api_key")
   );
 
-  function saveApiKey(key) {
+  const [llmProvider, setLlmProvider] = useState(
+    () => localStorage.getItem("archon_llm_provider") || "openai"
+  );
+  const [baseUrl, setBaseUrl] = useState(
+    () => localStorage.getItem("archon_base_url") || ""
+  );
+  const [modelPlanner, setModelPlanner] = useState(
+    () => localStorage.getItem("archon_model_planner") || ""
+  );
+  const [modelCoder, setModelCoder] = useState(
+    () => localStorage.getItem("archon_model_coder") || ""
+  );
+
+  const [tempProvider, setTempProvider] = useState(llmProvider);
+  const [tempKey, setTempKey] = useState(apiKey);
+  const [tempUrl, setTempUrl] = useState(baseUrl);
+  const [tempPlanner, setTempPlanner] = useState(modelPlanner);
+  const [tempCoder, setTempCoder] = useState(modelCoder);
+
+  useEffect(() => {
+    if (showKeyInput) {
+      setTempProvider(llmProvider);
+      setTempKey(apiKey);
+      setTempUrl(baseUrl);
+      setTempPlanner(modelPlanner);
+      setTempCoder(modelCoder);
+    }
+  }, [showKeyInput, llmProvider, apiKey, baseUrl, modelPlanner, modelCoder]);
+
+  function saveApiKey(key, provider = tempProvider, url = tempUrl, planner = tempPlanner, coder = tempCoder) {
     const trimmed = key.trim();
     localStorage.setItem("archon_api_key", trimmed);
+    localStorage.setItem("archon_llm_provider", provider);
+    localStorage.setItem("archon_base_url", url);
+    localStorage.setItem("archon_model_planner", planner);
+    localStorage.setItem("archon_model_coder", coder);
+
     setApiKey(trimmed);
+    setLlmProvider(provider);
+    setBaseUrl(url);
+    setModelPlanner(planner);
+    setModelCoder(coder);
     setShowKeyInput(false);
   }
 
@@ -106,8 +144,8 @@ export default function App() {
 
   async function handlePlan(task) {
     if (!apiKey.trim()) {
-      log("ERROR", "OpenAI API Key is required. Please save your API key in the banner above.");
-      toast.error("OpenAI API Key is required");
+      log("ERROR", "API Key is required. Please save your API key and provider settings in the banner above.");
+      toast.error("API Key is required");
       setShowKeyInput(true);
       return;
     }
@@ -129,6 +167,10 @@ export default function App() {
         task,
         session_id: sessionId,
         api_key: apiKey,
+        llm_provider: llmProvider,
+        base_url: baseUrl,
+        model_planner: modelPlanner,
+        model_coder: modelCoder,
       });
       const data = res.data;
 
@@ -236,6 +278,10 @@ export default function App() {
       const res = await axios.post(`${API}/build/next`, {
         session_id: sessionId,
         api_key: apiKey,
+        llm_provider: llmProvider,
+        base_url: baseUrl,
+        model_planner: modelPlanner,
+        model_coder: modelCoder,
       });
       const data = res.data;
 
@@ -361,8 +407,8 @@ export default function App() {
 
   async function handleDebug(brokenCode, errorMessage) {
     if (!apiKey.trim()) {
-      log("ERROR", "OpenAI API Key is required. Please save your API key in the banner above.");
-      toast.error("OpenAI API Key is required");
+      log("ERROR", "API Key is required. Please save your API key and provider settings in the banner above.");
+      toast.error("API Key is required");
       setShowKeyInput(true);
       return;
     }
@@ -380,6 +426,10 @@ export default function App() {
         broken_code: brokenCode,
         error_message: errorMessage,
         api_key: apiKey,
+        llm_provider: llmProvider,
+        base_url: baseUrl,
+        model_planner: modelPlanner,
+        model_coder: modelCoder,
       });
       const data = res.data;
 
@@ -411,36 +461,125 @@ export default function App() {
         <div style={{
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
           background: "#0d1117", borderBottom: "1px solid #30363d",
-          padding: "10px 20px", display: "flex", alignItems: "center", gap: "10px"
+          padding: "10px 20px", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "12px"
         }}>
+          <span style={{ color: "#e6edf3", fontSize: "13px", fontFamily: "Inter,sans-serif", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "4px" }}>
+            🔑 Provider:
+          </span>
+          <select
+            value={tempProvider}
+            onChange={(e) => {
+              const p = e.target.value;
+              setTempProvider(p);
+              if (p === "openai") {
+                setTempUrl("");
+                setTempPlanner("gpt-4o");
+                setTempCoder("gpt-4o-mini");
+              } else if (p === "grok") {
+                setTempUrl("https://api.xai.com/v1");
+                setTempPlanner("grok-2");
+                setTempCoder("grok-2");
+              } else {
+                setTempUrl("");
+                setTempPlanner("gpt-4o");
+                setTempCoder("gpt-4o-mini");
+              }
+            }}
+            style={{
+              padding: "6px 10px", borderRadius: "6px", border: "1px solid #30363d",
+              background: "#161b22", color: "#e6edf3", fontSize: "13px", outline: "none", cursor: "pointer"
+            }}
+          >
+            <option value="openai">OpenAI</option>
+            <option value="grok">Grok (xAI)</option>
+            <option value="custom">Custom (OpenAI-compatible)</option>
+          </select>
+
           <span style={{ color: "#e6edf3", fontSize: "13px", fontFamily: "Inter,sans-serif", whiteSpace: "nowrap" }}>
-            🔑 Enter your OpenAI API key to use ARCHON:
+            Key:
           </span>
           <input
             id="api-key-input"
             type="password"
-            placeholder="sk-proj-..."
-            defaultValue={apiKey}
+            placeholder={tempProvider === "grok" ? "xai-..." : "sk-..."}
+            value={tempKey}
+            onChange={(e) => setTempKey(e.target.value)}
             autoComplete="new-password"
             data-lpignore="true"
             data-1pignore="true"
             style={{
-              flex: 1, maxWidth: "420px", padding: "6px 12px",
+              flex: "1 1 180px", maxWidth: "220px", padding: "6px 12px",
               borderRadius: "6px", border: "1px solid #30363d",
               background: "#161b22", color: "#e6edf3",
               fontFamily: "monospace", fontSize: "13px", outline: "none"
             }}
-            onKeyDown={e => e.key === "Enter" && saveApiKey(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && saveApiKey(tempKey, tempProvider, tempUrl, tempPlanner, tempCoder)}
           />
+
+          {(tempProvider === "custom" || tempProvider === "grok") && (
+            <>
+              <span style={{ color: "#e6edf3", fontSize: "13px", fontFamily: "Inter,sans-serif", whiteSpace: "nowrap" }}>
+                Endpoint:
+              </span>
+              <input
+                type="text"
+                placeholder="Base URL (e.g., https://...)"
+                value={tempUrl}
+                onChange={(e) => setTempUrl(e.target.value)}
+                style={{
+                  flex: "1 1 200px", maxWidth: "240px", padding: "6px 12px",
+                  borderRadius: "6px", border: "1px solid #30363d",
+                  background: "#161b22", color: "#e6edf3",
+                  fontSize: "13px", outline: "none"
+                }}
+              />
+            </>
+          )}
+
+          {tempProvider !== "openai" && (
+            <>
+              <span style={{ color: "#e6edf3", fontSize: "13px", fontFamily: "Inter,sans-serif", whiteSpace: "nowrap" }}>
+                Planner:
+              </span>
+              <input
+                type="text"
+                placeholder="Model (e.g. grok-2)"
+                value={tempPlanner}
+                onChange={(e) => setTempPlanner(e.target.value)}
+                style={{
+                  width: "120px", padding: "6px 12px",
+                  borderRadius: "6px", border: "1px solid #30363d",
+                  background: "#161b22", color: "#e6edf3",
+                  fontSize: "13px", outline: "none"
+                }}
+              />
+              <span style={{ color: "#e6edf3", fontSize: "13px", fontFamily: "Inter,sans-serif", whiteSpace: "nowrap" }}>
+                Coder:
+              </span>
+              <input
+                type="text"
+                placeholder="Model (e.g. grok-2)"
+                value={tempCoder}
+                onChange={(e) => setTempCoder(e.target.value)}
+                style={{
+                  width: "120px", padding: "6px 12px",
+                  borderRadius: "6px", border: "1px solid #30363d",
+                  background: "#161b22", color: "#e6edf3",
+                  fontSize: "13px", outline: "none"
+                }}
+              />
+            </>
+          )}
+
           <button
-            onClick={() => saveApiKey(document.getElementById("api-key-input").value)}
+            onClick={() => saveApiKey(tempKey, tempProvider, tempUrl, tempPlanner, tempCoder)}
             style={{
               padding: "6px 16px", borderRadius: "6px", border: "none",
               background: "#238636", color: "#fff", fontFamily: "Inter,sans-serif",
               fontSize: "13px", cursor: "pointer", fontWeight: 600
             }}
           >Save</button>
-          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer"
+          <a href={tempProvider === "grok" ? "https://console.x.ai/" : "https://platform.openai.com/api-keys"} target="_blank" rel="noreferrer"
             style={{ color: "#58a6ff", fontSize: "12px", fontFamily: "Inter,sans-serif", marginLeft: "4px" }}>
             Get a key ↗
           </a>

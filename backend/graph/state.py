@@ -4,6 +4,10 @@ class AgentState(TypedDict, total=False):
     task:              str
     mode:              str
     api_key:           str    # user-supplied OpenAI API key (passed from frontend)
+    llm_provider:      str    # OpenAI, Grok, or Custom
+    base_url:          str    # custom API base endpoint URL
+    model_planner:     str    # model name for planner/critic
+    model_coder:       str    # model name for coder
     plan:              str
     implementation:    dict   # architecture, tech stack, files
     files:             list   # list of files to generate

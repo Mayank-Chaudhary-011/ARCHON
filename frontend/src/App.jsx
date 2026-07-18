@@ -21,6 +21,189 @@ function KeyIcon() {
   );
 }
 
+function HelpDropdown({ showDropdown, setShowDropdown }) {
+  useEffect(() => {
+    if (!showDropdown) return;
+    const handleClose = () => setShowDropdown(false);
+    window.addEventListener("click", handleClose);
+    return () => window.removeEventListener("click", handleClose);
+  }, [showDropdown]);
+
+  return (
+    <div style={{ position: "relative", display: "inline-block" }}>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowDropdown(!showDropdown);
+        }}
+        style={{
+          padding: "6px 14px",
+          borderRadius: "8px",
+          border: "1px solid rgba(48, 54, 61, 0.8)",
+          background: "rgba(22, 27, 34, 0.6)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          color: "#e6edf3",
+          fontFamily: "Inter, sans-serif",
+          fontSize: "13px",
+          fontWeight: 500,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          transition: "all 0.2s ease-in-out",
+          outline: "none",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.1)"
+        }}
+        onMouseOver={(e) => {
+          e.currentTarget.style.background = "rgba(33, 38, 45, 0.8)";
+          e.currentTarget.style.borderColor = "var(--accent)";
+          e.currentTarget.style.boxShadow = "0 0 10px var(--accent-glow)";
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.background = "rgba(22, 27, 34, 0.6)";
+          e.currentTarget.style.borderColor = "rgba(48, 54, 61, 0.8)";
+          e.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.1)";
+        }}
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+        <span style={{ fontWeight: 600 }}>Demos & Links</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8b949e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "transform 0.2s ease", transform: showDropdown ? "rotate(180deg)" : "rotate(0)" }}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {showDropdown && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: "absolute",
+            top: "calc(100% + 8px)",
+            right: 0,
+            width: "240px",
+            background: "rgba(15, 15, 24, 0.95)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            border: "1px solid var(--border2)",
+            borderRadius: "10px",
+            boxShadow: "0 12px 30px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.05)",
+            zIndex: 10000,
+            padding: "8px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+            animation: "fadeInUp 0.15s ease-out"
+          }}
+        >
+          <div style={{ padding: "6px 10px", fontSize: "10px", fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid var(--border)", marginBottom: "4px" }}>
+            Resources
+          </div>
+          
+          <a
+            href="https://platform.openai.com/api-keys"
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "8px 12px",
+              borderRadius: "6px",
+              color: "var(--text)",
+              textDecoration: "none",
+              fontSize: "13px",
+              fontFamily: "Inter, sans-serif",
+              transition: "all 0.15s ease",
+              fontWeight: 500
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = "var(--accent-bg)";
+              e.currentTarget.style.color = "var(--accent-light)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--text)";
+            }}
+          >
+            <KeyIcon />
+            <span>Get API Key ↗</span>
+          </a>
+
+          <a
+            href="https://www.loom.com/share/14aabde31d33410b9842fe900de06637"
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "8px 12px",
+              borderRadius: "6px",
+              color: "var(--text)",
+              textDecoration: "none",
+              fontSize: "13px",
+              fontFamily: "Inter, sans-serif",
+              transition: "all 0.15s ease",
+              fontWeight: 500
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = "rgba(52, 211, 153, 0.1)";
+              e.currentTarget.style.color = "var(--green)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--text)";
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" />
+            </svg>
+            <span>Watch Build Demo 📺</span>
+          </a>
+
+          <a
+            href="https://www.loom.com/share/d35d5eda4a13437c972a946c64343b2e"
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "8px 12px",
+              borderRadius: "6px",
+              color: "var(--text)",
+              textDecoration: "none",
+              fontSize: "13px",
+              fontFamily: "Inter, sans-serif",
+              transition: "all 0.15s ease",
+              fontWeight: 500
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = "rgba(34, 211, 238, 0.1)";
+              e.currentTarget.style.color = "var(--cyan)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--text)";
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" />
+            </svg>
+            <span>Watch Debug Demo 📺</span>
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   const [appState, setAppState] = useState("idle");
   const [sessionId] = useState(() => uuid());
@@ -40,9 +223,7 @@ export default function App() {
   const [apiKey, setApiKey] = useState(
     () => sessionStorage.getItem("archon_api_key") || ""
   );
-  const [baseUrl, setBaseUrl] = useState(
-    () => sessionStorage.getItem("archon_base_url") || ""
-  );
+  const baseUrl = "";
   const [modelPlanner, setModelPlanner] = useState(
     () => sessionStorage.getItem("archon_model_planner") || ""
   );
@@ -58,12 +239,10 @@ export default function App() {
   const [tempKey, setTempKey] = useState(
     () => sessionStorage.getItem("archon_api_key") || ""
   );
-  const [tempUrl, setTempUrl] = useState(
-    () => sessionStorage.getItem("archon_base_url") || ""
-  );
   const [tempModel, setTempModel] = useState(
     () => sessionStorage.getItem("archon_model_planner") || "gpt-4o"
   );
+  const [showDropdown, setShowDropdown] = useState(false);
 
   // Auto-focus the key input when banner opens
   useEffect(() => {
@@ -88,12 +267,11 @@ export default function App() {
     const coderModel = plannerModel.includes("4o") ? plannerModel.replace("gpt-4o", "gpt-4o-mini") : plannerModel;
 
     sessionStorage.setItem("archon_api_key", trimmedKey);
-    sessionStorage.setItem("archon_base_url", tempUrl.trim());
+    sessionStorage.removeItem("archon_base_url");
     sessionStorage.setItem("archon_model_planner", plannerModel);
     sessionStorage.setItem("archon_model_coder", coderModel);
 
     setApiKey(trimmedKey);
-    setBaseUrl(tempUrl.trim());
     setModelPlanner(plannerModel);
     setModelCoder(coderModel);
     setShowKeyInput(false);
@@ -491,76 +669,42 @@ export default function App() {
               fontSize: "13px", outline: "none"
             }}
           />
-          <span style={{ color: "#8b949e", fontSize: "12px", fontFamily: "Inter,sans-serif", whiteSpace: "nowrap" }}>
-            Base URL
-            <span style={{ color: "#484f58", fontStyle: "italic", marginLeft: "4px" }}>(optional)</span>
-          </span>
-          <input
-            type="text"
-            placeholder="https://api.openai.com/v1"
-            value={tempUrl}
-            onChange={(e) => setTempUrl(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && saveSettings()}
-            style={{
-              flex: "1 1 180px", maxWidth: "240px", padding: "6px 12px",
-              borderRadius: "6px", border: "1px solid #30363d",
-              background: "#161b22", color: "#e6edf3",
-              fontSize: "13px", outline: "none"
-            }}
-          />
           <button
             onClick={saveSettings}
             style={{
               padding: "6px 18px", borderRadius: "6px", border: "none",
               background: "#238636", color: "#fff", fontFamily: "Inter,sans-serif",
-              fontSize: "13px", cursor: "pointer", fontWeight: 600
+              fontSize: "13px", cursor: "pointer", fontWeight: 600, marginRight: "10px"
             }}
           >Save</button>
-          <a
-            href="https://platform.openai.com/api-keys"
-            target="_blank"
-            rel="noreferrer"
-            style={{ color: "#58a6ff", fontSize: "12px", fontFamily: "Inter,sans-serif" }}
-          >
-            Get a key ↗
-          </a>
-          <span style={{ color: "#30363d", fontSize: "12px", margin: "0 6px" }}>|</span>
-          <a
-            href="https://www.loom.com/share/14aabde31d33410b9842fe900de06637"
-            target="_blank"
-            rel="noreferrer"
-            style={{ color: "#58a6ff", fontSize: "12px", fontFamily: "Inter,sans-serif" }}
-          >
-            Watch Build Demo 📺
-          </a>
-          <span style={{ color: "#30363d", fontSize: "12px", margin: "0 6px" }}>|</span>
-          <a
-            href="https://www.loom.com/share/d35d5eda4a13437c972a946c64343b2e"
-            target="_blank"
-            rel="noreferrer"
-            style={{ color: "#58a6ff", fontSize: "12px", fontFamily: "Inter,sans-serif" }}
-          >
-            Watch Debug Demo 📺
-          </a>
+
+          <div style={{ marginLeft: "auto" }}>
+            <HelpDropdown showDropdown={showDropdown} setShowDropdown={setShowDropdown} />
+          </div>
         </div>
       )}
 
       {/* ── Small key button shown when banner is collapsed ── */}
       {!showKeyInput && (
-        <button
-          onClick={() => setShowKeyInput(true)}
-          title="Configure API key & model"
-          style={{
-            position: "fixed", top: "10px", right: "14px", zIndex: 9999,
-            background: "#161b22", border: "1px solid #30363d", borderRadius: "6px",
-            color: "#8b949e", padding: "5px 10px", fontSize: "11px",
-            cursor: "pointer", fontFamily: "Inter,sans-serif",
-            display: "flex", alignItems: "center", gap: "5px"
-          }}
-        >
-          <KeyIcon />
-          API Key
-        </button>
+        <div style={{
+          position: "fixed", top: "10px", right: "14px", zIndex: 9999,
+          display: "flex", alignItems: "center", gap: "8px"
+        }}>
+          <HelpDropdown showDropdown={showDropdown} setShowDropdown={setShowDropdown} />
+          <button
+            onClick={() => setShowKeyInput(true)}
+            title="Configure API key & model"
+            style={{
+              background: "#161b22", border: "1px solid #30363d", borderRadius: "6px",
+              color: "#8b949e", padding: "6px 12px", fontSize: "12px",
+              cursor: "pointer", fontFamily: "Inter,sans-serif",
+              display: "flex", alignItems: "center", gap: "5px"
+            }}
+          >
+            <KeyIcon />
+            API Key
+          </button>
+        </div>
       )}
 
       <Toaster

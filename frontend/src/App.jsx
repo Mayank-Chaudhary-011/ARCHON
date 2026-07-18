@@ -38,6 +38,20 @@ export default function App() {
     setShowKeyInput(false);
   }
 
+  useEffect(() => {
+    if (showKeyInput) {
+      const input = document.getElementById("api-key-input");
+      if (input) {
+        input.focus();
+      } else {
+        setTimeout(() => {
+          const inputRetry = document.getElementById("api-key-input");
+          if (inputRetry) inputRetry.focus();
+        }, 50);
+      }
+    }
+  }, [showKeyInput]);
+
   function handleModeChange(newMode) {
     setMode(newMode);
     setAppState("idle");
@@ -91,6 +105,12 @@ export default function App() {
   }, [autoMode, appState, filesRemaining]);
 
   async function handlePlan(task) {
+    if (!apiKey.trim()) {
+      log("ERROR", "OpenAI API Key is required. Please save your API key in the banner above.");
+      toast.error("OpenAI API Key is required");
+      setShowKeyInput(true);
+      return;
+    }
     setAppState("planning");
     setImpl(null);
     setFiles({});
@@ -340,6 +360,12 @@ export default function App() {
   }
 
   async function handleDebug(brokenCode, errorMessage) {
+    if (!apiKey.trim()) {
+      log("ERROR", "OpenAI API Key is required. Please save your API key in the banner above.");
+      toast.error("OpenAI API Key is required");
+      setShowKeyInput(true);
+      return;
+    }
     setAppState("planning");
     setFiles({});
     setActiveFile(null);
@@ -395,6 +421,9 @@ export default function App() {
             type="password"
             placeholder="sk-proj-..."
             defaultValue={apiKey}
+            autoComplete="new-password"
+            data-lpignore="true"
+            data-1pignore="true"
             style={{
               flex: 1, maxWidth: "420px", padding: "6px 12px",
               borderRadius: "6px", border: "1px solid #30363d",

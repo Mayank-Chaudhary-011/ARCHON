@@ -3,6 +3,7 @@ from typing import TypedDict
 class AgentState(TypedDict, total=False):
     task:              str
     mode:              str
+    api_key:           str    # user-supplied OpenAI API key (passed from frontend)
     plan:              str
     implementation:    dict   # architecture, tech stack, files
     files:             list   # list of files to generate
@@ -18,4 +19,4 @@ class AgentState(TypedDict, total=False):
     tokens_used:       int
     prompt_tokens:     int
     completion_tokens: int
-    efficiency_score:  float
+    efficiency_score:  float

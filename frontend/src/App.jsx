@@ -24,6 +24,19 @@ export default function App() {
     () => localStorage.getItem("mycoder_auto") === "true",
   );
   const [mode, setMode] = useState("generate");
+  const [apiKey, setApiKey] = useState(
+    () => localStorage.getItem("archon_api_key") || ""
+  );
+  const [showKeyInput, setShowKeyInput] = useState(
+    () => !localStorage.getItem("archon_api_key")
+  );
+
+  function saveApiKey(key) {
+    const trimmed = key.trim();
+    localStorage.setItem("archon_api_key", trimmed);
+    setApiKey(trimmed);
+    setShowKeyInput(false);
+  }
 
   function handleModeChange(newMode) {
     setMode(newMode);
@@ -95,6 +108,7 @@ export default function App() {
       const res = await axios.post(`${API}/plan`, {
         task,
         session_id: sessionId,
+        api_key: apiKey,
       });
       const data = res.data;
 
@@ -201,6 +215,7 @@ export default function App() {
     try {
       const res = await axios.post(`${API}/build/next`, {
         session_id: sessionId,
+        api_key: apiKey,
       });
       const data = res.data;
 
@@ -338,6 +353,7 @@ export default function App() {
       const res = await axios.post(`${API}/debug`, {
         broken_code: brokenCode,
         error_message: errorMessage,
+        api_key: apiKey,
       });
       const data = res.data;
 
@@ -363,14 +379,56 @@ export default function App() {
   }
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "260px 1fr",
-        height: "100vh",
-        overflow: "hidden",
-      }}
-    >
+    <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", height: "100vh", overflow: "hidden" }}>
+      {/* ── API Key Banner ───────────────────────────── */}
+      {showKeyInput && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
+          background: "#0d1117", borderBottom: "1px solid #30363d",
+          padding: "10px 20px", display: "flex", alignItems: "center", gap: "10px"
+        }}>
+          <span style={{ color: "#e6edf3", fontSize: "13px", fontFamily: "Inter,sans-serif", whiteSpace: "nowrap" }}>
+            🔑 Enter your OpenAI API key to use ARCHON:
+          </span>
+          <input
+            id="api-key-input"
+            type="password"
+            placeholder="sk-proj-..."
+            defaultValue={apiKey}
+            style={{
+              flex: 1, maxWidth: "420px", padding: "6px 12px",
+              borderRadius: "6px", border: "1px solid #30363d",
+              background: "#161b22", color: "#e6edf3",
+              fontFamily: "monospace", fontSize: "13px", outline: "none"
+            }}
+            onKeyDown={e => e.key === "Enter" && saveApiKey(e.target.value)}
+          />
+          <button
+            onClick={() => saveApiKey(document.getElementById("api-key-input").value)}
+            style={{
+              padding: "6px 16px", borderRadius: "6px", border: "none",
+              background: "#238636", color: "#fff", fontFamily: "Inter,sans-serif",
+              fontSize: "13px", cursor: "pointer", fontWeight: 600
+            }}
+          >Save</button>
+          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer"
+            style={{ color: "#58a6ff", fontSize: "12px", fontFamily: "Inter,sans-serif", marginLeft: "4px" }}>
+            Get a key ↗
+          </a>
+        </div>
+      )}
+      {!showKeyInput && (
+        <button
+          onClick={() => setShowKeyInput(true)}
+          title="Change API key"
+          style={{
+            position: "fixed", top: "10px", right: "14px", zIndex: 9999,
+            background: "#161b22", border: "1px solid #30363d", borderRadius: "6px",
+            color: "#8b949e", padding: "4px 10px", fontSize: "11px",
+            cursor: "pointer", fontFamily: "Inter,sans-serif"
+          }}
+        >🔑 API Key</button>
+      )}
       <Toaster
         position="top-right"
         toastOptions={{

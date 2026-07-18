@@ -17,27 +17,32 @@ router = APIRouter()
 class PlanRequest(BaseModel):
     task:       str
     session_id: str
+    api_key:    str = ""
 
 
 class BuildNextRequest(BaseModel):
     session_id: str
+    api_key:    str = ""
 
 
 class ApproveRequest(BaseModel):
     session_id: str
     filename:   str
     code:       str
+    api_key:    str = ""
 
 
 class DebugRequest(BaseModel):
     broken_code:   str
     error_message: str
+    api_key:       str = ""
 
 
-def generate_plan(task: str) -> dict:
+def generate_plan(task: str, api_key: str = "") -> dict:
     state: AgentState = {
         "task":            task,
         "mode":            "generate",
+        "api_key":         api_key,
         "broken_code":     "",
         "error_message":   "",
         "plan":            "",
@@ -55,13 +60,14 @@ def generate_plan(task: str) -> dict:
     return result
 
 
-def generate_one_file(task: str, implementation: dict, files: list, generated_files: dict) -> dict:
+def generate_one_file(task: str, implementation: dict, files: list, generated_files: dict, api_key: str = "") -> dict:
     # Keep a clean snapshot without the file we are about to generate.
     base_files = generated_files.copy()
 
     state: AgentState = {
         "task":            task,
         "mode":            "generate",
+        "api_key":         api_key,
         "broken_code":     "",
         "error_message":   "",
         "plan":            implementation.get("description", task),
@@ -134,7 +140,7 @@ def generate_one_file(task: str, implementation: dict, files: list, generated_fi
 
 @router.post("/plan")
 async def create_plan(req: PlanRequest):
-    result = generate_plan(req.task)
+    result = generate_plan(req.task, api_key=req.api_key)
     implementation = result.get("implementation", {})
 
     # Generate plan.md content
@@ -167,6 +173,7 @@ async def create_plan(req: PlanRequest):
     # Store session
     save_session(req.session_id, {
         "task":            req.task,
+        "api_key":         req.api_key,
         "implementation":  implementation,
         "files":           implementation.get("files", []),
         "generated_files": {},
@@ -226,7 +233,8 @@ async def build_next_file(req: BuildNextRequest):
         task            = session["task"],
         implementation  = session["implementation"],
         files           = files,
-        generated_files = generated_files
+        generated_files = generated_files,
+        api_key         = session.get("api_key", "")
     )
 
     # If critic never passed, escalate to human review

@@ -8,10 +8,17 @@ from backend.memory.supabase_memory import save_run , get_similar_runs
 
 load_dotenv()
 
-planner_llm = ChatOpenAI(model="gpt-4o", api_key=os.getenv("OPENAI_API_KEY"))
-coder_llm   = ChatOpenAI(model="gpt-4o-mini", api_key=os.getenv("OPENAI_API_KEY"))
-# Critic uses GPT-4o (same model as planner) for deep reasoning quality
-critic_llm  = planner_llm
+_FALLBACK_KEY = os.getenv("OPENAI_API_KEY", "")
+
+
+def make_llms(api_key: str = ""):
+    """Create per-request LLM clients using the user's API key.
+    Falls back to the server env key only if no key is supplied."""
+    key = api_key.strip() or _FALLBACK_KEY
+    planner = ChatOpenAI(model="gpt-4o",      api_key=key)
+    coder   = ChatOpenAI(model="gpt-4o-mini", api_key=key)
+    critic  = planner
+    return planner, coder, critic
 
 # Global token counter for the current build run.
 # NOTE: This is a module-level dict shared across the process.
@@ -55,6 +62,7 @@ def track_tokens(response):
 
 def planner_node(state:AgentState) -> AgentState:
     reset_token_log()
+    planner_llm, _, _ = make_llms(state.get("api_key", ""))
     print("\n[PLANNER] Breaking down task...")
 
     past_runs = get_similar_runs(state.get("task", ""))
@@ -151,6 +159,7 @@ Strict rules:
 - Do NOT add excessive inline comments or explain simple steps. Keep code clean and self-documenting. Only add a concise, highly relevant docstring/comment at the top of the file, and at most 1 or 2 relevant comments within the file logic where strictly necessary.
 """
 
+    _, coder_llm, _ = make_llms(state.get("api_key", ""))
     response = coder_llm.invoke(prompt)
     track_tokens(response)
 
@@ -213,6 +222,7 @@ VERDICT: PASS or FAIL
 REASON: one concise sentence
 """
 
+    _, _, critic_llm = make_llms(state.get("api_key", ""))
     response = critic_llm.invoke(prompt)
     track_tokens(response)
     feedback = response.content
@@ -300,6 +310,7 @@ No explanation. No backticks. No markdown.
 Do NOT add excessive inline comments. Keep the code clean and self-documenting with only a top docstring and at most 1 or 2 relevant comments within the file logic if needed.
 """
 
+    _, coder_llm, _ = make_llms(state.get("api_key", ""))
     response = coder_llm.invoke(prompt)
     track_tokens(response)
     # Strip any accidental markdown fences
@@ -349,6 +360,7 @@ def implementation_planner_node(state: AgentState) -> AgentState:
     - Return ONLY the JSON. No explanation. No backticks.
     """
 
+    planner_llm, _, _ = make_llms(state.get("api_key", ""))
     response = planner_llm.invoke(prompt)
     track_tokens(response)
 

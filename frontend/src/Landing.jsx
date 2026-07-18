@@ -530,7 +530,7 @@ export default function Landing() {
             autonomously.
           </p>
 
-          <div style={{ display: "flex", gap: "12px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "center" }}>
             <button
               onClick={() => navigate("/app")}
               style={{
@@ -558,6 +558,70 @@ export default function Landing() {
             >
               Start Building →
             </button>
+            <a
+              href="https://www.loom.com/share/14aabde31d33410b9842fe900de06637"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                padding: isMobile ? "13px 20px" : "14px 24px",
+                borderRadius: "10px",
+                border: "1px solid #d1d5db",
+                textDecoration: "none",
+                color: "#374151",
+                fontSize: isMobile ? "13px" : "14px",
+                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif",
+                transition: "all 0.2s",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                background: "#fff",
+                width: isMobile ? "100%" : "auto",
+                justifyContent: "center",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#f9fafb";
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#fff";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              📺 Build Demo
+            </a>
+            <a
+              href="https://www.loom.com/share/d35d5eda4a13437c972a946c64343b2e"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                padding: isMobile ? "13px 20px" : "14px 24px",
+                borderRadius: "10px",
+                border: "1px solid #d1d5db",
+                textDecoration: "none",
+                color: "#374151",
+                fontSize: isMobile ? "13px" : "14px",
+                fontWeight: 600,
+                fontFamily: "'Inter', sans-serif",
+                transition: "all 0.2s",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                background: "#fff",
+                width: isMobile ? "100%" : "auto",
+                justifyContent: "center",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#f9fafb";
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#fff";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              📺 Debug Demo
+            </a>
           </div>
 
           {/* Stats */}

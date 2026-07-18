@@ -524,6 +524,24 @@ export default function App() {
           >
             Get a key ↗
           </a>
+          <span style={{ color: "#30363d", fontSize: "12px", margin: "0 6px" }}>|</span>
+          <a
+            href="https://www.loom.com/share/14aabde31d33410b9842fe900de06637"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: "#58a6ff", fontSize: "12px", fontFamily: "Inter,sans-serif" }}
+          >
+            Watch Build Demo 📺
+          </a>
+          <span style={{ color: "#30363d", fontSize: "12px", margin: "0 6px" }}>|</span>
+          <a
+            href="https://www.loom.com/share/d35d5eda4a13437c972a946c64343b2e"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: "#58a6ff", fontSize: "12px", fontFamily: "Inter,sans-serif" }}
+          >
+            Watch Debug Demo 📺
+          </a>
         </div>
       )}
 

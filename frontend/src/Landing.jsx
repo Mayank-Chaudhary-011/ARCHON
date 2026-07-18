@@ -556,7 +556,7 @@ export default function Landing() {
                 e.target.style.transform = "translateY(0)";
               }}
             >
-              Start Building Free →
+              Start Building →
             </button>
           </div>
 

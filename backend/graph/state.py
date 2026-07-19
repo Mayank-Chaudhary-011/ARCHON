@@ -23,4 +23,4 @@ class AgentState(TypedDict, total=False):
     tokens_used:       int
     prompt_tokens:     int
     completion_tokens: int
-    efficiency_score:  float
+    efficiency_score:  float
